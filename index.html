@@ -51,7 +51,7 @@
     cursor: pointer; outline: none; -webkit-tap-highlight-color: transparent;
   }
   .scene3d:focus-visible { outline: 2px solid var(--gold); outline-offset: 14px; border-radius: 8px; }
-  .scene3d .table-plane, .scene3d .pose, .scene3d .env3d, .scene3d .backside, .scene3d .flap { transform-style: preserve-3d; }
+  .scene3d .table-plane, .scene3d .pose, .scene3d .nudge, .scene3d .env3d, .scene3d .backside, .scene3d .flap { transform-style: preserve-3d; }
   .scene3d .face, .scene3d .face *, .scene3d .pocket, .scene3d .pocket *, .scene3d .wall, .scene3d .card-mini, .scene3d .card-mini *, .scene3d .seal, .scene3d .seal *, .scene3d .edge, .scene3d .ground, .scene3d .ground * { transform-style: flat; }
   .table-plane { position: absolute; inset: 0; transform: rotateY(var(--tiltY, 0deg)) rotateX(calc(46deg + var(--tiltX, 0deg))); }
   .ground { position: absolute; inset: 0; transform: rotateZ(-5deg) translateZ(-.5px); }
@@ -158,8 +158,29 @@
   @keyframes burst { 0% { opacity: 0; transform: translate(0,0) scale(.4) } 10% { opacity: 1 } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(.2) } }
 
   .hint { display: flex; align-items: center; gap: 14px; font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: var(--on-dark-soft); transition: opacity .4s; text-shadow: 0 1px 3px rgba(0,0,0,.6); }
-  .hint::before, .hint::after { content: ""; width: 36px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold)); opacity: .7; }
-  .hint::after { background: linear-gradient(90deg, var(--gold), transparent); }
+  .cta { position: relative; display: inline-flex; align-items: center; gap: 12px; margin-top: 6px; padding: 13px 26px 13px 20px; border-radius: 99px; cursor: pointer;
+    border: 1px solid rgba(240,212,150,.85); color: #fbe9bd; font-family: var(--display); font-weight: 700; font-size: 13px; letter-spacing: .26em;
+    background: linear-gradient(180deg, rgba(92,18,26,.88), rgba(46,6,12,.9)); text-shadow: 0 1px 2px rgba(0,0,0,.5);
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    box-shadow: 0 10px 26px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,230,180,.25);
+    animation: ctaIn .9s cubic-bezier(.22,1,.36,1) 1.2s backwards; }
+  .cta::before { content: ""; position: absolute; inset: -1px; border-radius: inherit; border: 1px solid rgba(240,212,150,.7); animation: ctaRing 2.4s ease-out 2.2s infinite; pointer-events: none; }
+  .cta::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    background: linear-gradient(105deg, transparent 35%, rgba(255,236,190,.28) 50%, transparent 65%); background-size: 250% 100%; animation: ctaShine 3.6s ease-in-out 2.6s infinite; }
+  .cta:hover, .cta:focus-visible { border-color: #fff1c8; outline: none; transform: translateY(-1px); }
+  .cta svg { width: 22px; height: 22px; flex: none; overflow: visible; }
+  .cta .finger { fill: #fbe9bd; transform-origin: 50% 90%; animation: press 2.4s ease-in-out 2.2s infinite; }
+  .cta .ripple { fill: none; stroke: #fbe9bd; stroke-width: 1.4; transform-origin: 9px 6px; opacity: 0; animation: ripple 2.4s ease-out 2.2s infinite; }
+  @keyframes ctaIn { from { opacity: 0; transform: translateY(14px) } }
+  @keyframes ctaRing { 0% { opacity: .9; transform: scale(1) } 70%, 100% { opacity: 0; transform: scale(1.18, 1.45) } }
+  @keyframes ctaShine { 0%, 55% { background-position: 120% 0 } 85%, 100% { background-position: -120% 0 } }
+  @keyframes press { 0%, 100% { transform: none } 12% { transform: translateY(2px) scale(.94) } 24% { transform: none } }
+  @keyframes ripple { 0%, 10% { opacity: 0; transform: scale(.4) } 14% { opacity: .9 } 45%, 100% { opacity: 0; transform: scale(1.6) } }
+  /* the envelope gives a small hop every few seconds to show it can be picked up */
+  .nudge { position: absolute; inset: 0; animation: hop 5s cubic-bezier(.3,.7,.3,1) 3s infinite; }
+  @keyframes hop { 0%, 78%, 100% { transform: none } 84% { transform: translateZ(16px) rotateX(-5deg) } 90% { transform: translateZ(0) } 94% { transform: translateZ(5px) rotateX(-1.5deg) } 97% { transform: none } }
+  .scene3d.lifted .nudge { animation: none; }
+  @media (hover: hover) { .scene3d:not(.lifted):hover .pose { transform: translateZ(calc(var(--T) / 2 + 8px)) rotateZ(-5deg); } }
 
   /* ---------- The card, flipped to its face ---------- */
   .card-wrap { width: min(100%, 480px); display: flex; flex-direction: column; align-items: center; gap: 20px; perspective: 1600px; }
@@ -229,7 +250,15 @@
   @keyframes sheen { from { background-position: 150% 0 } to { background-position: -150% 0 } }
   .inside-shade { position: absolute; inset: 0; z-index: 4; border-radius: 22px; background: rgba(0,0,0,.55); transition: opacity 2.2s ease .3s; pointer-events: none; }
   .gate.open ~ .inside-shade, .card-wrap.open .inside-shade { opacity: 0; }
-  .flip .back { position: absolute; inset: 0; border-radius: 22px; background: var(--cream); transform: rotateY(180deg); backface-visibility: hidden; overflow: hidden; }
+  .flip .back { position: absolute; inset: 0; border-radius: 22px; background: var(--cream); transform: translateZ(-2.5px) rotateY(180deg); backface-visibility: hidden; overflow: hidden; box-shadow: 0 24px 50px rgba(0,0,0,.55); }
+  .flip .front { transform: translateZ(2.5px); }
+  .cedge { position: absolute; backface-visibility: visible; -webkit-backface-visibility: visible; pointer-events: none;
+    background: linear-gradient(var(--dir, 180deg), #7a5a22 0%, #d9b866 30%, #fff0c0 50%, #d9b866 70%, #7a5a22 100%); }
+  .c-top, .c-bot { left: 18px; right: 18px; height: 5px; transform: rotateX(90deg); }
+  .c-top { top: -2.5px; } .c-bot { top: calc(100% - 2.5px); }
+  .c-l, .c-r { top: 18px; bottom: 18px; width: 5px; transform: rotateY(90deg); --dir: 90deg; }
+  .c-l { left: -2.5px; } .c-r { left: calc(100% - 2.5px); }
+  .fshade { position: absolute; inset: 0; border-radius: 22px; pointer-events: none; background: #120204; opacity: 0; z-index: 30; }
   .flip .back img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .flip .card { backface-visibility: hidden; }
 
@@ -409,7 +438,7 @@
 
   [hidden] { display: none !important; }
   @media (prefers-reduced-motion: reduce) {
-    .box, .flip, .content > *, .title, .spark, .ico-cal, .ico-clock .hand, .ico-pin, .dress svg, .logo, .sheen.go, .pan-hint, .pose, .flicker, .scene3d.flipped .seal.whole::after, .scene3d.strain .seal.whole, .dust i, .rsvp-btn, .rsvp-btn::after { animation: none; }
+    .box, .flip, .content > *, .nudge, .cta, .cta::before, .cta::after, .cta .finger, .cta .ripple, .title, .spark, .ico-cal, .ico-clock .hand, .ico-pin, .dress svg, .logo, .sheen.go, .pan-hint, .pose, .flicker, .scene3d.flipped .seal.whole::after, .scene3d.strain .seal.whole, .dust i, .rsvp-btn, .rsvp-btn::after { animation: none; }
     .rsvp-layer, .reply { transition: none; }
     .door, .inside-shade, .pose, .env3d, .flap, .shadow3d, .contact, .glare { transition: none; }
     .card-mini, .seal, .stage { transition: none; }
@@ -440,7 +469,7 @@
   <div class="scene3d" id="box" role="button" tabindex="0" aria-label="Open your invitation">
     <div class="table-plane">
       <div class="ground"><div class="shadow3d"></div><div class="contact"></div></div>
-      <div class="pose">
+      <div class="pose"><div class="nudge">
         <div class="env3d" id="photo">
           <div class="edge e-top"></div><div class="edge e-bottom"></div><div class="edge e-left"></div><div class="edge e-right"></div>
           <div class="face env-front paper">
@@ -470,21 +499,27 @@
             <div class="dust" id="dust" aria-hidden="true"></div>
           </div>
         </div>
-      </div>
+      </div></div>
     </div>
   </div>
-  <div class="hint" id="hint">Tap to open</div>
+  <button class="hint cta" id="hint" type="button" aria-label="Tap to open your invitation">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle class="ripple" cx="9" cy="6" r="5"/><path class="finger" d="M9 3.2c.9 0 1.6.7 1.6 1.6v5.4l.5-.1c.8-.2 1.6.3 1.8 1.1l.1.3.5-.1c.8-.1 1.5.4 1.7 1.2l.5-.1c.8-.1 1.6.5 1.7 1.3l.3 2.6c.2 1.9-.4 3.7-1.7 5l-.4.4H9.6l-3.4-4.4c-.6-.7-.5-1.8.2-2.4.6-.5 1.5-.5 2.1 0l-.1-10.2c0-.9.7-1.6 1.6-1.6z"/></svg>
+    <span>Tap to open</span>
+  </button>
 </main>
 
 <section class="card-wrap" id="invite" hidden aria-live="polite">
   <div class="zoom" id="zoom"><div class="pan" id="pan">
   <div class="flip">
+    <div class="cedge c-top"></div><div class="cedge c-bot"></div><div class="cedge c-l"></div><div class="cedge c-r"></div>
     <div class="back" aria-hidden="true">
       <img id="card-back-full" alt="" hidden>
       <svg class="grain" width="100%" height="100%"><rect width="100%" height="100%" filter="url(#grainf)"/></svg>
       <svg class="ornament" viewBox="0 0 100 60"><use href="#orn"/></svg>
+      <div class="fshade" id="shade-back"></div>
     </div>
     <div class="front">
+    <div class="fshade" id="shade-front"></div>
     <div class="gate" id="gate" aria-hidden="true">
       <div class="door l"><div class="face f"><div class="frame"></div><div class="cover-text top">You are invited</div><img class="cover-logo" src="img/kitkat-logo.png" alt=""><div class="cover-text bottom">A New Chapter</div></div>
         <div class="face b"><div class="frame"></div><svg class="orn-wing" viewBox="0 0 100 60"><use href="#orn"/></svg><div class="wing-eyebrow">Especially for</div><div class="wing-script" id="wing-name"></div><div class="wing-rule"></div><div class="wing-small">We would be honoured by your presence as a new chapter begins</div></div></div>
@@ -766,7 +801,7 @@
   async function open() {
     if (opening) return;
     opening = true;
-    hint.style.opacity = "0";
+    hint.style.opacity = "0"; hint.style.pointerEvents = "none";
     askMotion();
     SFX.ensure();
     if (reduced) return reveal();
@@ -822,6 +857,9 @@
         { transform: `translate(${dx * .35}px, ${dy * .45 - to.height * .06}px) translateZ(${lift}px) rotateZ(-30deg) rotateY(110deg) scale(${s0 + (1 - s0) * .45})`, offset: .5, easing: "cubic-bezier(.2,.6,.15,1)" },
         { transform: "none", offset: 1 }
       ], { duration: FLIGHT, fill: "backwards" });
+      // light falls off each face as it turns away from the viewer
+      document.getElementById("shade-back").animate([{ opacity: 0 }, { opacity: .55, offset: .5 }, { opacity: .55 }], { duration: FLIGHT, easing: "ease-in" });
+      document.getElementById("shade-front").animate([{ opacity: .6 }, { opacity: .6, offset: .5 }, { opacity: 0 }], { duration: FLIGHT, easing: "ease-out" });
       SFX.flip(.25);
       setTimeout(() => invite.querySelector(".sheen").classList.add("go"), FLIGHT * .55);
       const landed = () => { invite.classList.remove("flying"); setTimeout(() => { if (!invite.hidden) tilt.card = true; }, 5200); };
@@ -858,7 +896,7 @@
     dust.innerHTML = "";
     stage.classList.remove("gone");
     stage.hidden = false;
-    hint.style.opacity = "";
+    hint.style.opacity = ""; hint.style.pointerEvents = "";
     applyName();
     const pose = box.querySelector(".pose");
     pose.style.animation = "none"; void pose.offsetWidth; pose.style.animation = "";   // drop it onto the table again
@@ -867,6 +905,7 @@
     tilt.env = true;
   }
   box.addEventListener("click", open);
+  hint.addEventListener("click", open);
   box.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } });
   document.getElementById("replay").addEventListener("click", resetEnvelope);
 
