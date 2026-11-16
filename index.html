@@ -1030,6 +1030,7 @@
     box.classList.add("strain");           // the wax strains for a moment
     await wait(500);
     makeDust();
+    CHOC.prepare();
     SFX.crack(); SFX.sealSparkle(.05); buzz([12, 40, 20]);
     box.classList.add("crack");            // seal breaks, gold dust
     await wait(520);
@@ -1218,13 +1219,15 @@
     v.addEventListener("playing", () => { if (wanted) v.classList.add("on"); });
     document.addEventListener("visibilitychange", () => { if (!wanted) return; if (document.hidden) v.pause(); else v.play().catch(() => {}); });
     return {
+      prepare() {                                         // start downloading as the envelope opens, so it is ready in time
+        if (reduced || !v || v.querySelector("source")) return;
+        [["img/chocolate.mp4", "video/mp4"], ["img/chocolate.webm", "video/webm"]].forEach(([src, type]) => { const el = document.createElement("source"); el.src = src; el.type = type; v.append(el); });
+        v.preload = "auto"; v.load();
+      },
       start() {
         if (reduced || !v) return;
+        this.prepare();
         wanted = true; v.hidden = false;
-        if (!v.querySelector("source")) {
-          [["img/chocolate.mp4", "video/mp4"], ["img/chocolate.webm", "video/webm"]].forEach(([src, type]) => { const el = document.createElement("source"); el.src = src; el.type = type; v.append(el); });
-          v.load();
-        }
         v.muted = true; v.play().catch(() => {});       // phones that block video (e.g. Low Power Mode) keep the still image
       },
       stop() { wanted = false; if (!v) return; v.classList.remove("on"); v.pause(); v.hidden = true; }
