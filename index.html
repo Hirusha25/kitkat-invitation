@@ -4,6 +4,25 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
+<meta name="theme-color" content="#1a0d08">
+<meta name="color-scheme" content="dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="format-detection" content="telephone=no">
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="A New Chapter · You are invited">
+<meta property="og:description" content="Join with Nestlé Professional as we unveil something extraordinary for the very first time in Sri Lanka.">
+<meta property="og:url" content="https://hirusha25.github.io/kitkat-invitation/">
+<meta property="og:image" content="https://hirusha25.github.io/kitkat-invitation/img/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A burgundy envelope sealed with a gold KitKat wax seal on a candlelit table">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preload" as="image" href="img/scene.jpg">
+<link rel="preload" as="image" href="img/env-front.jpg">
+<link rel="preload" as="image" href="img/seal-kitkat.webp">
 <title>A New Chapter Invitation</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,6 +43,17 @@
   }
   * { box-sizing: border-box; }
   html { height: 100%; overflow-x: hidden; }
+  html, body { overscroll-behavior-y: none; }
+  button, a, .scene3d, .pan { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  .scene3d, .cta, .card-wrap { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  .reply input, .reply textarea { -webkit-user-select: text; user-select: text; }
+  /* loading: a glowing seal until every image is ready, then the envelope drops onto the table */
+  .loader { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; pointer-events: none; transition: opacity .35s ease, transform .35s ease; }
+  body.ready .loader { transform: scale(.85); }
+  .loader img { width: 84px; height: auto; filter: drop-shadow(0 0 18px rgba(240,200,120,.45)); animation: glow 1.8s ease-in-out infinite; }
+  @keyframes glow { 0%, 100% { opacity: .55; transform: scale(.96) } 50% { opacity: 1; transform: scale(1) } }
+  body:not(.ready) .stage { visibility: hidden; }
+  body.ready .loader { opacity: 0; }
   @supports (overflow: clip) { html, body { overflow-x: clip; } }
   body {
     margin: 0; min-height: 100%;
@@ -64,8 +94,11 @@
     transition: transform 1.1s cubic-bezier(.3,.7,.2,1), opacity 1.1s, filter 1.1s;
   }
   .scene3d.lifted .shadow3d { opacity: .5; filter: blur(24px); transform: translate3d(3%, 10%, -1px) scale(1.12); }
-  .pose { position: absolute; inset: 0; transform: translateZ(calc(var(--T) / 2)) rotateZ(-5deg); transition: transform 1.3s cubic-bezier(.22,1,.36,1); animation: drop 1.6s cubic-bezier(.2,.8,.2,1) backwards; }
-  @keyframes drop { from { opacity: 0; transform: translate3d(0, -14%, 220px) rotateZ(-16deg) } 60% { opacity: 1 } }
+  .pose { position: absolute; inset: 0; transform: translateZ(calc(var(--T) / 2)) rotateZ(-5deg); transition: transform 1.3s cubic-bezier(.22,1,.36,1); }
+  body.ready .pose { animation: drop 1.6s cubic-bezier(.2,.8,.2,1) .3s backwards; }
+  @keyframes drop { from { transform: translate3d(0, -14%, 220px) rotateZ(-16deg) } }
+  body.ready .scene3d { animation: sceneIn .9s ease .3s backwards; }
+  @keyframes sceneIn { from { opacity: 0 } }
   .scene3d.lifted .pose { transform: translate3d(0, -4%, calc(var(--W) * .2)) rotateX(-46deg) rotateZ(0deg); }
   .env3d { position: absolute; inset: 0; transition: transform 1.25s cubic-bezier(.65,0,.35,1); }
   .scene3d.flipped .env3d { transform: rotateY(180deg); }
@@ -111,6 +144,7 @@
   .address .rule { width: 34%; height: 1.5px; margin: 0 auto; background: linear-gradient(90deg, transparent, #e2c07a, transparent); }
 
   .backside { position: absolute; inset: 0; transform: translateZ(calc(var(--T) / -2)) rotateY(180deg); }
+  .scene3d:not(.flipped) .backside { visibility: hidden; }
   .wall { background-image: url(img/liner.jpg); transform: translateZ(0); }
   .card-mini {
     left: 6% !important; right: 6% !important; top: 7% !important; bottom: 9% !important;
@@ -159,20 +193,22 @@
 
   .hint { display: flex; align-items: center; gap: 14px; font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: var(--on-dark-soft); transition: opacity .4s; text-shadow: 0 1px 3px rgba(0,0,0,.6); }
   .cta { position: relative; display: inline-flex; align-items: center; gap: 12px; margin-top: 6px; padding: 13px 26px 13px 20px; border-radius: 99px; cursor: pointer;
-    border: 1px solid rgba(240,212,150,.85); color: #fbe9bd; font-family: var(--display); font-weight: 700; font-size: 13px; letter-spacing: .26em;
-    background: linear-gradient(180deg, rgba(92,18,26,.88), rgba(46,6,12,.9)); text-shadow: 0 1px 2px rgba(0,0,0,.5);
-    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
-    box-shadow: 0 10px 26px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,230,180,.25);
-    animation: ctaIn .9s cubic-bezier(.22,1,.36,1) 1.2s backwards; }
-  .cta::before { content: ""; position: absolute; inset: -1px; border-radius: inherit; border: 1px solid rgba(240,212,150,.7); animation: ctaRing 2.4s ease-out 2.2s infinite; pointer-events: none; }
+    border: 1.5px solid #e2c27f; color: #f4dc9f; font-family: var(--display); font-weight: 700; font-size: 13px; letter-spacing: .28em;
+    background: rgba(12,5,3,.62); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+    text-shadow: 0 1px 2px rgba(0,0,0,.6);
+    box-shadow: 0 10px 24px rgba(0,0,0,.5), 0 0 16px rgba(255,190,100,.14), inset 0 1px 0 rgba(255,230,180,.12);
+    }
+  body.ready .cta { animation: ctaIn .9s cubic-bezier(.22,1,.36,1) 1.2s backwards; }
+  .cta::before { content: ""; position: absolute; inset: -3px; border-radius: inherit; border: 1px solid rgba(226,194,127,.5); animation: ctaRing 3.4s ease-out 2.2s infinite; pointer-events: none; }
   .cta::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
-    background: linear-gradient(105deg, transparent 35%, rgba(255,236,190,.28) 50%, transparent 65%); background-size: 250% 100%; animation: ctaShine 3.6s ease-in-out 2.6s infinite; }
-  .cta:hover, .cta:focus-visible { border-color: #fff1c8; outline: none; transform: translateY(-1px); }
+    background: linear-gradient(105deg, transparent 38%, rgba(255,230,180,.14) 50%, transparent 62%); background-size: 250% 100%; animation: ctaShine 5s ease-in-out 2.6s infinite; }
+  .cta:hover, .cta:focus-visible { outline: none; filter: brightness(1.06); }
+  .cta:focus-visible { box-shadow: 0 0 0 2px #f4dc9f, 0 10px 24px rgba(0,0,0,.5); }
   .cta svg { width: 22px; height: 22px; flex: none; overflow: visible; }
-  .cta .finger { fill: #fbe9bd; transform-origin: 50% 90%; animation: press 2.4s ease-in-out 2.2s infinite; }
-  .cta .ripple { fill: none; stroke: #fbe9bd; stroke-width: 1.4; transform-origin: 9px 6px; opacity: 0; animation: ripple 2.4s ease-out 2.2s infinite; }
+  .cta .finger { fill: #f4dc9f; transform-origin: 50% 90%; animation: press 2.4s ease-in-out 2.2s infinite; }
+  .cta .ripple { fill: none; stroke: #f4dc9f; stroke-width: 1.4; transform-origin: 9px 6px; opacity: 0; animation: ripple 2.4s ease-out 2.2s infinite; }
   @keyframes ctaIn { from { opacity: 0; transform: translateY(14px) } }
-  @keyframes ctaRing { 0% { opacity: .9; transform: scale(1) } 70%, 100% { opacity: 0; transform: scale(1.18, 1.45) } }
+  @keyframes ctaRing { 0% { opacity: .8; transform: scale(1) } 60%, 100% { opacity: 0; transform: scale(1.08, 1.3) } }
   @keyframes ctaShine { 0%, 55% { background-position: 120% 0 } 85%, 100% { background-position: -120% 0 } }
   @keyframes press { 0%, 100% { transform: none } 12% { transform: translateY(2px) scale(.94) } 24% { transform: none } }
   @keyframes ripple { 0%, 10% { opacity: 0; transform: scale(.4) } 14% { opacity: .9 } 45%, 100% { opacity: 0; transform: scale(1.6) } }
@@ -438,6 +474,7 @@
 
   [hidden] { display: none !important; }
   @media (prefers-reduced-motion: reduce) {
+    .loader img, body.ready .scene3d { animation: none; }
     .box, .flip, .content > *, .nudge, .cta, .cta::before, .cta::after, .cta .finger, .cta .ripple, .title, .spark, .ico-cal, .ico-clock .hand, .ico-pin, .dress svg, .logo, .sheen.go, .pan-hint, .pose, .flicker, .scene3d.flipped .seal.whole::after, .scene3d.strain .seal.whole, .dust i, .rsvp-btn, .rsvp-btn::after { animation: none; }
     .rsvp-layer, .reply { transition: none; }
     .door, .inside-shade, .pose, .env3d, .flap, .shadow3d, .contact, .glare { transition: none; }
@@ -460,6 +497,7 @@
 </svg>
 
 <div class="table" aria-hidden="true"></div>
+<div class="loader" id="loader" role="status" aria-label="Loading your invitation"><img src="img/seal-kitkat.webp" alt=""></div>
 <button class="mute" id="mute" type="button" aria-pressed="false" aria-label="Mute sounds" title="Sound on / off">
   <svg class="on" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16 9a4 4 0 0 1 0 6"/><path d="M18.5 6.5a8 8 0 0 1 0 11"/></svg>
   <svg class="off" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16 9l5 6M21 9l-5 6"/></svg>
@@ -614,6 +652,16 @@
 </details>
 
 <script>
+  // ---- show the scene only once its images are ready (mobile data can be slow) ----
+  (() => {
+    const srcs = ["img/scene.jpg", "img/env-front.jpg", "img/env-back.jpg", "img/liner.jpg", "img/seal-kitkat.webp", "img/card-bg.webp", "img/kitkat-logo.png", "img/paper.webp"];
+    const one = src => new Promise(res => { const i = new Image(); i.onload = i.onerror = () => (i.decode ? i.decode().catch(() => {}) : Promise.resolve()).then(res); i.src = src; });
+    const fonts = document.fonts && document.fonts.ready ? document.fonts.ready.catch(() => {}) : Promise.resolve();
+    const go = () => { if (!document.body.classList.contains("ready")) { document.body.classList.add("ready"); setTimeout(() => { const l = document.getElementById("loader"); if (l) l.hidden = true; }, 900); } };
+    Promise.all([...srcs.map(one), fonts]).then(go);
+    setTimeout(go, 8000);
+  })();
+
   // ---- Edit your event here ----
   const EVENT = {
     title: "A New Chapter",
@@ -645,11 +693,12 @@
   }
 
   const enc = encodeURIComponent;
+  const IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
   const calUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${enc(EVENT.calendarTitle)}&dates=${EVENT.calendarStart}/${EVENT.calendarEnd}&ctz=${enc(EVENT.calendarZone)}&location=${enc(EVENT.mapQuery)}&details=${enc(EVENT.subtitle)}`;
   const mapUrl = `https://www.google.com/maps/search/?api=1&query=${enc(EVENT.mapQuery)}`;
   document.getElementById("actions").innerHTML =
       (EVENT.rsvpUrl ? `<a href="${EVENT.rsvpUrl}" target="_blank" rel="noopener">RSVP</a>` : "")
-    + `<a href="${calUrl}" target="_blank" rel="noopener">Add to calendar</a>`
+    + `<a href="${IOS ? "event.ics" : calUrl}" ${IOS ? "" : 'target="_blank" rel="noopener"'}>Add to calendar</a>`
     + `<a href="${mapUrl}" target="_blank" rel="noopener">Directions</a>`;
 
   // ---- Guest name from the link ----
@@ -698,7 +747,7 @@
 
   // ---- Sound: synthesised in the page, so nothing has to load ----
   const SFX = (() => {
-    let ctx = null, noiseBuf = null, muted = false;
+    let ctx = null, noiseBuf = null, muted = false, bus = null;
     try { muted = localStorage.getItem("invite-muted") === "1"; } catch {}
     const btn = document.getElementById("mute");
     const paint = () => { btn.setAttribute("aria-pressed", muted ? "true" : "false"); btn.setAttribute("aria-label", muted ? "Unmute sounds" : "Mute sounds"); };
@@ -711,6 +760,14 @@
       const len = ctx.sampleRate * 2; noiseBuf = ctx.createBuffer(1, len, ctx.sampleRate);
       const d = noiseBuf.getChannelData(0); let b0 = 0, b1 = 0, b2 = 0;
       for (let i = 0; i < len; i++) { const w = Math.random() * 2 - 1; b0 = .997 * b0 + .029 * w; b1 = .985 * b1 + .032 * w; b2 = .95 * b2 + .048 * w; d[i] = (b0 + b1 + b2 + w * .3) * .35; }
+      // master bus: dry signal plus a soft hall reverb, then a gentle limiter
+      bus = ctx.createGain(); bus.gain.value = .9;
+      const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 4; comp.attack.value = .004; comp.release.value = .25;
+      const rl = Math.floor(ctx.sampleRate * 2.6), ir = ctx.createBuffer(2, rl, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) { const ch = ir.getChannelData(c); for (let i = 0; i < rl; i++) ch[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / rl, 3.2); }
+      const verb = ctx.createConvolver(); verb.buffer = ir;
+      const wet = ctx.createGain(); wet.gain.value = .32;
+      bus.connect(comp); bus.connect(verb); verb.connect(wet); wet.connect(comp); comp.connect(ctx.destination);
       return ctx;
     }
     // filtered noise with a sweep and an envelope: paper, whoosh, creak
@@ -724,7 +781,7 @@
       g.gain.exponentialRampToValueAtTime(vol, t + attack);
       g.gain.setValueAtTime(vol, t + Math.max(attack, dur * hold));
       g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-      src.connect(flt); flt.connect(g); g.connect(ctx.destination);
+      src.connect(flt); flt.connect(g); g.connect(bus);
       src.start(t); src.stop(t + dur + .05);
     }
     function tone(at, freq, dur, vol, type) {
@@ -732,12 +789,38 @@
       const t = ctx.currentTime + at;
       const o = ctx.createOscillator(); o.type = type || "sine"; o.frequency.setValueAtTime(freq, t);
       const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .012); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-      o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t + dur + .05);
+      o.connect(g); g.connect(bus); o.start(t); o.stop(t + dur + .05);
     }
     function chime(at, vol) {
-      const v = vol || .22;
-      [659.25, 783.99, 987.77, 1318.5].forEach((f, i) => { tone(at + i * .16, f, 1.6, v, "sine"); tone(at + i * .16, f * 2, .9, v * .25, "sine"); });
+      const v = vol || .22;   // rising E major bell arpeggio
+      [659.25, 830.61, 987.77, 1318.5].forEach((f, i) => { tone(at + i * .14, f, 2.2, v, "sine"); tone(at + i * .14, f * 2.01, 1.1, v * .22, "sine"); tone(at + i * .14, f * 3.98, .5, v * .06, "sine"); });
       noise(at + .5, 2.4, "highpass", 6000, 9000, .7, .025, .6, .3);
+    }
+    // glitter: a scatter of tiny high bell notes
+    function glitter(at, dur, vol, n) {
+      const notes = [1318.5, 1479.98, 1661.22, 1975.53, 2217.46, 2637.02, 2959.96];
+      for (let i = 0; i < (n || 14); i++) tone(at + Math.random() * dur, notes[(Math.random() * notes.length) | 0], .5 + Math.random() * .5, (vol || .05) * (.5 + Math.random() * .5), "sine");
+    }
+    // warm string-like swell that blooms open
+    function pad(at, freqs, dur, vol) {
+      if (muted || !ensure()) return;
+      const t = ctx.currentTime + at;
+      const flt = ctx.createBiquadFilter(); flt.type = "lowpass"; flt.Q.value = .7;
+      flt.frequency.setValueAtTime(300, t); flt.frequency.exponentialRampToValueAtTime(3200, t + dur * .55); flt.frequency.exponentialRampToValueAtTime(900, t + dur);
+      const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + dur * .4); g.gain.setValueAtTime(vol, t + dur * .6); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      flt.connect(g); g.connect(bus);
+      freqs.forEach(f => [-6, 6].forEach(det => { const o = ctx.createOscillator(); o.type = "sawtooth"; o.frequency.value = f; o.detune.value = det; const og = ctx.createGain(); og.gain.value = .14 / freqs.length; o.connect(og); og.connect(flt); o.start(t); o.stop(t + dur + .05); }));
+    }
+    // rising air that lifts into the reveal
+    function riser(at, dur, vol) { noise(at, dur, "bandpass", 260, 5200, 1.6, vol || .12, dur * .85, .9); }
+    // soft low bloom when something lands
+    function bloom(at, vol) {
+      if (muted || !ensure()) return;
+      const t = ctx.currentTime + at;
+      const o = ctx.createOscillator(); o.type = "sine"; o.frequency.setValueAtTime(110, t); o.frequency.exponentialRampToValueAtTime(48, t + .5);
+      const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol || .3, t + .02); g.gain.exponentialRampToValueAtTime(0.0001, t + .9);
+      o.connect(g); g.connect(bus); o.start(t); o.stop(t + 1);
+      noise(at, .5, "lowpass", 900, 200, .7, (vol || .3) * .3, .01, .1);
     }
     return {
       crack(at = 0) { tone(at, 1900, .05, .35, "square"); tone(at + .02, 700, .08, .25, "triangle"); noise(at, .22, "bandpass", 2600, 900, 1.2, .5, .005, .15); noise(at + .05, .5, "highpass", 5000, 3000, .8, .12, .02, .2); },
@@ -745,7 +828,21 @@
       slide(at = 0) { noise(at, 1.2, "bandpass", 700, 1500, 1.4, .18, .35, .5); },
       flip(at = 0) { noise(at, 1.5, "bandpass", 250, 2200, 1.1, .2, .45, .45); },
       doors(at = 0) { noise(at, 2.3, "lowpass", 400, 1200, .8, .16, .9, .55); },
-      chime, ensure
+      chime, ensure,
+      // the reveal: air rises as the card flies, it lands with a soft bloom and glitter,
+      // the panels open on a warm swell, and bells ring as the words appear
+      reveal(flight, doorsAt, wordsAt) {
+        riser(0, flight / 1000, .1);
+        glitter(.3, flight / 1000 - .2, .035, 10);
+        bloom(flight / 1000 - .02, .26);
+        glitter(flight / 1000, .5, .05, 8);
+        pad(doorsAt - .2, [164.81, 246.94, 329.63, 415.3, 493.88], 4.6, .22);
+        noise(doorsAt, 2.3, "lowpass", 400, 1200, .8, .12, .9, .55);
+        chime(wordsAt, .2);
+        glitter(wordsAt + .3, 1.8, .04, 16);
+      },
+      sealSparkle(at = 0) { glitter(at, .5, .045, 8); },
+      sent() { chime(0, .18); glitter(.3, 1, .04, 10); }
     };
   })();
 
@@ -761,6 +858,7 @@
   const wait = ms => new Promise(r => setTimeout(r, ms));
 
   const dust = document.getElementById("dust");
+  function buzz(p) { try { if (navigator.vibrate) navigator.vibrate(p); } catch {} }
   function makeDust() {
     dust.innerHTML = "";
     const w = box.offsetWidth;
@@ -814,7 +912,7 @@
     box.classList.add("strain");           // the wax strains for a moment
     await wait(500);
     makeDust();
-    SFX.crack();
+    SFX.crack(); SFX.sealSparkle(.05); buzz([12, 40, 20]);
     box.classList.add("crack");            // seal breaks, gold dust
     await wait(520);
     SFX.flap();
@@ -861,7 +959,9 @@
       document.getElementById("shade-back").animate([{ opacity: 0 }, { opacity: .55, offset: .5 }, { opacity: .55 }], { duration: FLIGHT, easing: "ease-in" });
       document.getElementById("shade-front").animate([{ opacity: .6 }, { opacity: .6, offset: .5 }, { opacity: 0 }], { duration: FLIGHT, easing: "ease-out" });
       SFX.flip(.25);
+      SFX.reveal(FLIGHT, 2.3, 3.6);
       setTimeout(() => invite.querySelector(".sheen").classList.add("go"), FLIGHT * .55);
+      setTimeout(() => buzz(14), FLIGHT - 60);
       const landed = () => { invite.classList.remove("flying"); setTimeout(() => { if (!invite.hidden) tilt.card = true; }, 5200); };
       anim.finished.then(landed, landed);
     } else {
@@ -869,7 +969,7 @@
       invite.querySelector(".sheen").classList.add("go");
     }
     setTimeout(() => { stage.hidden = true; stage.removeAttribute("style"); }, reduced ? 0 : 1250);
-    if (!reduced) { SFX.doors(2.3); SFX.chime(3.6); SFX.slide(5.9); } else { SFX.chime(.2); }
+    if (!reduced) { SFX.slide(5.9); } else { SFX.chime(.2); }
     setTimeout(() => {                                   // after the flip: doors open, camera pulls back to show the full spread
       if (invite.hidden) return;
       gate.classList.add("open");
@@ -921,7 +1021,7 @@
       const i = !on ? 1 : v > max / 2 ? 0 : v < -max / 2 ? 2 : 1;
       dots.forEach((d, k) => d.setAttribute("aria-current", String(k === i)));
     }
-    function go(i) { if (on) { set([max, 0, -max][i], true); hint.classList.add("done"); } }
+    function go(i) { if (on) { set([max, 0, -max][i], true); hint.classList.add("done"); buzz(8); } }
     function measure() {
       const W = invite.querySelector(".flip").offsetWidth;
       max = Math.max(0, (2 * W - (innerWidth - 32)) / 2);
@@ -953,7 +1053,7 @@
         const aim = x + vel * 180;
         const targets = [max, 0, -max];
         let best = 0; targets.forEach((t, i) => { if (Math.abs(aim - t) < Math.abs(aim - targets[best])) best = i; });
-        set(targets[best], true); hint.classList.add("done");
+        set(targets[best], true); hint.classList.add("done"); buzz(8);
         swallowClick = true; setTimeout(() => swallowClick = false, 50);
         invite.classList.remove("dragging");
       } else if (on && e && e.type === "pointerup") {
@@ -1055,7 +1155,7 @@
           await fetch(EVENT.rsvpEndpoint, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(data) });
         }
         try { localStorage.setItem(key(), JSON.stringify(data)); } catch {}
-        showThanks(data); paintButton(); SFX.chime(0, .18);
+        showThanks(data); paintButton(); SFX.sent(); buzz([10, 60, 14]);
         document.getElementById("rsvp-change").focus();
       } catch {
         err.textContent = "Your reply didn't send. Check your connection and try again.";
