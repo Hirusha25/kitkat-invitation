@@ -297,16 +297,17 @@
   @keyframes sheen { from { background-position: 150% 0 } to { background-position: -150% 0 } }
   .inside-shade { position: absolute; inset: 0; z-index: 4; border-radius: 22px; background: rgba(0,0,0,.55); transform: translateZ(1px); transition: opacity 2.2s ease .3s; pointer-events: none; }
   .gate.open ~ .inside-shade, .card-wrap.open .inside-shade { opacity: 0; }
-  .flip .back { position: absolute; inset: 0; border-radius: 22px; background: var(--cream); transform: translateZ(-1.5px) rotateY(180deg); backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; box-shadow: 0 24px 50px rgba(0,0,0,.45); }
-  .flip > .front { transform: translateZ(1.5px); }
+  .flip .back { position: absolute; inset: 0; border-radius: 22px; background: var(--cream); transform: translateZ(-2.5px) rotateY(180deg); backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; box-shadow: 0 24px 50px rgba(0,0,0,.45); }
+  .flip > .front { transform: translateZ(2.5px); }
   /* thin gilded paper edge, seen as the card turns */
   .cedge { position: absolute; backface-visibility: visible; -webkit-backface-visibility: visible; pointer-events: none;
-    background: linear-gradient(var(--dir, 180deg), #a07a32 0%, #f2dca0 45%, #fff3d0 55%, #a07a32 100%); }
+    background: linear-gradient(var(--dir, 180deg), #7a5a22 0%, #d9b866 30%, #fff0c0 50%, #d9b866 70%, #7a5a22 100%); }
   .card-wrap:not(.flying) .cedge { display: none; }
-  .c-top, .c-bot { left: 16px; right: 16px; height: 3px; transform: rotateX(90deg); }
-  .c-top { top: -1.5px; } .c-bot { top: calc(100% - 1.5px); }
-  .c-l, .c-r { top: 16px; bottom: 16px; width: 3px; transform: rotateY(90deg); --dir: 90deg; }
-  .c-l { left: -1.5px; } .c-r { left: calc(100% - 1.5px); }
+  .c-top, .c-bot { left: 18px; right: 18px; height: 5px; transform: rotateX(90deg); }
+  .c-top { top: -2.5px; } .c-bot { top: calc(100% - 2.5px); }
+  .c-l, .c-r { top: 18px; bottom: 18px; width: 5px; transform: rotateY(90deg); --dir: 90deg; }
+  .c-l { left: -2.5px; } .c-r { left: calc(100% - 2.5px); }
+  .fshade { position: absolute; inset: 0; border-radius: 22px; pointer-events: none; background: #120204; opacity: 0; z-index: 29; transform: translateZ(3.5px); }
   /* warm light that travels across each face as it turns: highlight then soft falloff, never grey */
   .turnlight { position: absolute; inset: 0; border-radius: 22px; pointer-events: none; opacity: 0; z-index: 30;
     background: linear-gradient(112deg, rgba(255,240,210,0) 20%, rgba(255,240,210,.55) 42%, rgba(255,240,210,0) 58%, rgba(60,25,10,.16) 100%);
@@ -574,9 +575,11 @@
       <img id="card-back-full" alt="" hidden>
       <svg class="grain" width="100%" height="100%"><rect width="100%" height="100%" filter="url(#grainf)"/></svg>
       <svg class="ornament" viewBox="0 0 100 60"><use href="#orn"/></svg>
+      <div class="fshade" id="shade-back"></div>
       <div class="turnlight" id="light-back"></div>
     </div>
     <div class="front">
+    <div class="fshade" id="shade-front"></div>
     <div class="turnlight" id="light-front"></div>
     <div class="gate" id="gate" aria-hidden="true">
       <div class="door l"><div class="face f"><div class="frame"></div><div class="cover-text top">You are invited</div><img class="cover-logo" src="img/kitkat-logo.png" alt=""><div class="cover-text bottom">A New Chapter</div></div>
@@ -995,6 +998,9 @@
         { transform: `translate(${dx * .35}px, ${dy * .45 - to.height * .06}px) translateZ(${lift}px) rotateZ(-30deg) rotateY(110deg) scale(${s0 + (1 - s0) * .45})`, offset: .5, easing: "cubic-bezier(.2,.6,.15,1)" },
         { transform: "none", offset: 1 }
       ], { duration: FLIGHT, fill: "backwards" });
+      // each face darkens as it turns side-on, which is what gives the card its weight
+      document.getElementById("shade-back").animate([{ opacity: 0 }, { opacity: .55, offset: .5 }, { opacity: .55 }], { duration: FLIGHT, easing: "ease-in" });
+      document.getElementById("shade-front").animate([{ opacity: .6 }, { opacity: .6, offset: .5 }, { opacity: 0 }], { duration: FLIGHT, easing: "ease-out" });
       // light travels across the card as it turns
       const sweep = [{ opacity: 0, backgroundPosition: "120% 0" }, { opacity: 1, offset: .35 }, { opacity: 0, backgroundPosition: "-20% 0" }];
       document.getElementById("light-back").animate(sweep, { duration: FLIGHT * .55, easing: "ease-in-out" });
