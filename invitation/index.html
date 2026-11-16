@@ -47,6 +47,8 @@
   * { box-sizing: border-box; }
   html { height: 100%; overflow-x: hidden; }
   html, body { overscroll-behavior-y: none; }
+  /* desktop only: body is a scroll box (overflow-x), so "none" there stopped the mouse wheel reaching the page */
+  @media (hover: hover) and (pointer: fine) { body { overscroll-behavior-y: auto; } }
   button, a, .scene3d, .pan { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
   .scene3d, .cta, .card-wrap { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
   .reply input, .reply textarea { -webkit-user-select: text; user-select: text; }
