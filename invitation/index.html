@@ -393,6 +393,7 @@
   .subtitle { font-family: "Beau Rivage", "Brush Script MT", cursive; font-size: 11cqw; line-height: 1; margin: .5cqw 0 0; color: #fff; text-shadow: 0 2px 6px rgba(0,0,0,.35); white-space: nowrap; }
   .copy { font-size: 3.3cqw; line-height: 1.55; margin: 3.2cqw 0 0; max-width: 90cqw; font-weight: 400; text-wrap: balance; }
   #intro { max-width: 84cqw; }
+  #intro strong { font-weight: 700; }
   .copy.gold { color: #f0cf8a; font-size: 3.1cqw; margin-top: 3cqw; max-width: 96cqw; }
 
   .details { display: flex; justify-content: center; align-items: stretch; margin-top: 6cqw; width: 100%; padding: 0 1cqw; }
@@ -742,7 +743,12 @@
   };
 
   document.querySelectorAll("[data-f]").forEach(el => { el.textContent = EVENT[el.dataset.f] ?? ""; });
-  document.getElementById("intro").textContent = EVENT.introLines.join(" ");
+  (() => {                                             // intro text, with the host's name in bold
+    const el = document.getElementById("intro"), text = EVENT.introLines.join(" "), name = "Nestlé Professional", i = text.indexOf(name);
+    if (i < 0) { el.textContent = text; return; }
+    const b = document.createElement("strong"); b.textContent = name;
+    el.textContent = ""; el.append(text.slice(0, i), b, text.slice(i + name.length));
+  })();
   if (EVENT.cardBackImage) {
     for (const id of ["card-back-mini", "card-back-full"]) { const i = document.getElementById(id); i.src = EVENT.cardBackImage; i.hidden = false; }
     document.getElementById("orn-mini").hidden = true;
