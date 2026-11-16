@@ -1314,7 +1314,7 @@
     return { enable, disable };
   })();
 
-  // ---- the chocolate splash, as a looping video (eases in from a slow start) ----
+  // ---- the chocolate splash, as a looping video ----
   const CHOC = (() => {
     const v = document.getElementById("card-video");
     let wanted = false, t0 = 0, raf = 0, showTimer = 0;
@@ -1335,9 +1335,9 @@
       clearTimeout(showTimer);
       showTimer = setTimeout(() => {
         if (!wanted) return;
-        try { v.playbackRate = 0.12; } catch {}
+        try { v.playbackRate = 1; } catch {}             // normal speed from the first frame (a slow start read as the wave starting twice)
         v.muted = true;
-        v.play().then(() => { v.classList.add("on"); ease(); }).catch(() => {});   // phones that block video (e.g. Low Power Mode) keep the still picture
+        v.play().then(() => { v.classList.add("on"); }).catch(() => {});   // phones that block video (e.g. Low Power Mode) keep the still picture
       }, Math.max(0, SHOW_AFTER - (performance.now() - t0)));
     }
     document.addEventListener("visibilitychange", () => { if (!wanted) return; if (document.hidden) v.pause(); else v.play().catch(() => {}); });
