@@ -789,7 +789,7 @@
     const isSample = fromLink.toLowerCase() === "priya sharma";
     const n = OPEN ? "" : (!isHost && !isSample && fromLink) || EVENT.defaultGuest || "";
     envName.textContent = n || "You are invited";
-    document.getElementById("wing-name").textContent = n || "You";
+    document.getElementById("wing-name").textContent = n || "Someone Special";
     dear.textContent = n ? `Dear ${n},` : "Dear Guest,";
     dear.hidden = !EVENT.nameOnCard;
     host.hidden = !isHost;
