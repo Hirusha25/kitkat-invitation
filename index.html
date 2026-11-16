@@ -705,6 +705,7 @@
   })();
 
   // ---- Edit your event here ----
+  const OPEN = !!window.INVITE_OPEN;   // the nameless version for guests without a personal link
   const EVENT = {
     title: "A New Chapter",
     subtitle: "The Same Iconic Break",
@@ -758,7 +759,7 @@
       if (/^#host$/i.test(location.hash)) return Promise.resolve();
       if (!repeatable && sent.has(type)) return Promise.resolve();
       sent.add(type);
-      const guest = (document.getElementById("env-name") || {}).textContent || "";
+      const guest = OPEN ? "Open invitation" : (document.getElementById("env-name") || {}).textContent || "";
       return post(Object.assign({ type, guest, device, visit }, extra || {})).catch(() => {});
     }
     return { send, post, device, visit };
@@ -784,13 +785,13 @@
   const host = document.getElementById("host");
   function applyName() {
     const fromLink = guestName();
-    const isHost = fromLink.toLowerCase() === "host";
+    const isHost = !OPEN && fromLink.toLowerCase() === "host";
     const isSample = fromLink.toLowerCase() === "priya sharma";
-    const n = (!isHost && !isSample && fromLink) || EVENT.defaultGuest || "";
+    const n = OPEN ? "" : (!isHost && !isSample && fromLink) || EVENT.defaultGuest || "";
     envName.textContent = n || "You are invited";
     document.getElementById("wing-name").textContent = n || "You";
-    dear.textContent = n ? `Dear ${n},` : "";
-    dear.hidden = !(n && EVENT.nameOnCard);
+    dear.textContent = n ? `Dear ${n},` : "Dear Guest,";
+    dear.hidden = !EVENT.nameOnCard;
     host.hidden = !isHost;
   }
   applyName();
@@ -851,8 +852,8 @@
           artist: name ? "An invitation for " + name : "You are invited",
           album: "KitKat · Nestlé Professional",
           artwork: [
-            { src: new URL("img/now-playing-512.png", location.href).href, sizes: "512x512", type: "image/png" },
-            { src: new URL("img/now-playing-256.png", location.href).href, sizes: "256x256", type: "image/png" }
+            { src: new URL("img/now-playing-512.png", document.baseURI).href, sizes: "512x512", type: "image/png" },
+            { src: new URL("img/now-playing-256.png", document.baseURI).href, sizes: "256x256", type: "image/png" }
           ]
         });
         navigator.mediaSession.playbackState = "playing";
@@ -1272,7 +1273,7 @@
         mobile: form.mobile.value.trim(),
         email: form.email.value.trim(),
         message: form.message.value.trim(),
-        invitedAs: guestName() || EVENT.defaultGuest || "",
+        invitedAs: OPEN ? "" : guestName() || EVENT.defaultGuest || "",
         page: location.href.split("#")[0]
       };
       if (!data.name) { err.textContent = "Please enter your name."; nameIn.focus(); return; }
