@@ -95,9 +95,27 @@
   .scene3d.lifted .shadow3d { opacity: 1; filter: blur(14px); transform: translate3d(2%, 30%, 0) scale(.92, .78); }
   .scene3d.lifted .contact { opacity: .55; filter: blur(18px); transform: translate(1%, 26%) scale(.9, .7); }
   .pose { position: absolute; inset: 0; transform: translateZ(calc(var(--T) / 2)) rotateZ(-5deg); transition: transform 1.3s cubic-bezier(.22,1,.36,1); }
-  body.ready .pose { animation: drop 1.6s cubic-bezier(.2,.8,.2,1) .3s backwards; }
-  @keyframes drop { from { transform: translate3d(0, -14%, 220px) rotateZ(-16deg) } }
-  body.ready .scene3d { animation: sceneIn .9s ease .3s backwards; }
+  body.ready .pose { animation: drop 2.6s linear .35s backwards; }
+  @keyframes drop {
+    0%   { transform: translate3d(0, -120%, calc(var(--W) * .9)) rotateZ(-16deg) rotateX(-28deg); animation-timing-function: cubic-bezier(.45,0,.9,.55); }
+    46%  { transform: translateZ(calc(var(--T) / 2)) rotateZ(-5deg); animation-timing-function: cubic-bezier(.2,.6,.35,1); }
+    60%  { transform: translateZ(calc(var(--T) / 2 + var(--W) * .07)) rotateZ(-4deg) rotateX(-4deg); animation-timing-function: cubic-bezier(.55,0,.8,.5); }
+    72%  { transform: translateZ(calc(var(--T) / 2)) rotateZ(-5.5deg); animation-timing-function: cubic-bezier(.2,.6,.35,1); }
+    81%  { transform: translateZ(calc(var(--T) / 2 + var(--W) * .022)) rotateZ(-4.8deg) rotateX(-1.2deg); animation-timing-function: cubic-bezier(.55,0,.8,.5); }
+    89%  { transform: translateZ(calc(var(--T) / 2)) rotateZ(-5deg); animation-timing-function: cubic-bezier(.2,.6,.35,1); }
+    94%  { transform: translateZ(calc(var(--T) / 2 + var(--W) * .006)) rotateZ(-5deg); animation-timing-function: ease-in; }
+    100% { transform: translateZ(calc(var(--T) / 2)) rotateZ(-5deg); }
+  }
+  body.ready .ground { animation: groundIn 2.6s linear .35s backwards; }
+  @keyframes groundIn {
+    0%   { opacity: 0; transform: rotateZ(-14deg) translateZ(-.5px) translateY(-30%) scale(1.6); animation-timing-function: cubic-bezier(.45,0,.9,.55); }
+    46%  { opacity: 1; transform: rotateZ(-5deg) translateZ(-.5px); animation-timing-function: cubic-bezier(.2,.6,.35,1); }
+    60%  { opacity: .78; transform: rotateZ(-4deg) translateZ(-.5px) scale(1.08); animation-timing-function: cubic-bezier(.55,0,.8,.5); }
+    72%  { opacity: 1; transform: rotateZ(-5.5deg) translateZ(-.5px); }
+    81%  { opacity: .92; transform: rotateZ(-4.8deg) translateZ(-.5px) scale(1.025); }
+    89%, 100% { opacity: 1; transform: rotateZ(-5deg) translateZ(-.5px); }
+  }
+  body.ready .scene3d { animation: sceneIn .5s ease .35s backwards; }
   @keyframes sceneIn { from { opacity: 0 } }
   .scene3d.lifted .pose { transform: translate3d(0, -2%, calc(var(--W) * .34)) rotateX(-46deg) rotateZ(0deg) scale(.86); }
   .env3d { position: absolute; inset: 0; transition: transform 1.25s cubic-bezier(.65,0,.35,1); }
@@ -203,10 +221,10 @@
   body.ready .cta.away::before, body .cta.away::before { animation: none; opacity: 0; }
   @keyframes halo { 0% { opacity: .8; transform: scale(1) } 65%, 100% { opacity: 0; transform: scale(1.35) } }
   @keyframes breathe { 0%, 100% { opacity: 1 } 50% { opacity: .62 } }
-  body.ready .cta { animation: ctaIn .9s cubic-bezier(.22,1,.36,1) 1.2s backwards, breathe 3.2s ease-in-out 2.4s infinite; }
+  body.ready .cta { animation: ctaIn .9s cubic-bezier(.22,1,.36,1) 2.6s backwards, breathe 3.2s ease-in-out 3.5s infinite; }
   @keyframes ctaIn { from { opacity: 0; transform: translateY(14px) } }
   /* the envelope gives a small hop every few seconds to show it can be picked up */
-  .nudge { position: absolute; inset: 0; animation: hop 5s cubic-bezier(.3,.7,.3,1) 3s infinite; }
+  .nudge { position: absolute; inset: 0; animation: hop 5s cubic-bezier(.3,.7,.3,1) 4.5s infinite; }
   @keyframes hop { 0%, 78%, 100% { transform: none } 84% { transform: translateZ(16px) rotateX(-5deg) } 90% { transform: translateZ(0) } 94% { transform: translateZ(5px) rotateX(-1.5deg) } 97% { transform: none } }
   .scene3d.lifted .nudge { animation: none; }
   @media (hover: hover) { .scene3d:not(.lifted):hover .pose { transform: translateZ(calc(var(--T) / 2 + 8px)) rotateZ(-5deg); } }
@@ -476,7 +494,7 @@
 
   [hidden] { display: none !important; }
   @media (prefers-reduced-motion: reduce) {
-    .loader img, body.ready .scene3d { animation: none; }
+    .loader img, body.ready .scene3d, body.ready .ground { animation: none; }
     .box, .flip, .content > *, .nudge, .cta, .cta::before, .title, .spark, .ico-cal, .ico-clock .hand, .ico-pin, .dress svg, .logo, .sheen.go, .pan-hint, .pose, .flicker, .scene3d.flipped .seal.whole::after, .scene3d.strain .seal.whole, .dust i, .rsvp-btn, .rsvp-btn::after { animation: none; }
     .rsvp-layer, .reply { transition: none; }
     .door, .inside-shade, .pose, .env3d, .flap, .shadow3d, .contact, .glare { transition: none; }
@@ -499,7 +517,7 @@
 </svg>
 
 <div class="table" aria-hidden="true"></div>
-<div class="loader" id="loader" role="status" aria-label="Loading your invitation"><img src="img/seal-kitkat.webp" alt=""></div>
+<div class="loader" id="loader" role="status" aria-label="Loading your invitation"></div>
 <button class="mute" id="mute" type="button" aria-pressed="false" aria-label="Mute sounds" title="Sound on / off">
   <svg class="on" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16 9a4 4 0 0 1 0 6"/><path d="M18.5 6.5a8 8 0 0 1 0 11"/></svg>
   <svg class="off" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16 9l5 6M21 9l-5 6"/></svg>
