@@ -175,6 +175,18 @@
   .front { position: relative; backface-visibility: hidden; transform-style: preserve-3d; border-radius: 22px; container-type: inline-size; }
   .gate { position: absolute; inset: 0; z-index: 5; transform-style: preserve-3d; border-radius: 22px; pointer-events: none; }
   .zoom { width: 100%; transform-style: preserve-3d; transition: transform 2.2s cubic-bezier(.5,.05,.3,1); }
+  .pan { width: 100%; transform-style: preserve-3d; transition: transform .65s cubic-bezier(.22,1,.36,1); touch-action: pan-y; }
+  .card-wrap.pannable .pan { cursor: grab; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  .card-wrap.dragging .pan { cursor: grabbing; }
+  .pan-ui { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: -4px; transition: opacity .5s ease; }
+  .pan-dots { display: flex; gap: 6px; }
+  .pan-dots button { width: 30px; height: 30px; padding: 0; border: 0; background: none; cursor: pointer; display: grid; place-items: center; }
+  .pan-dots button::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: rgba(232,201,138,.35); transition: background .3s, transform .3s; }
+  .pan-dots button[aria-current="true"]::before { background: #e8c98a; transform: scale(1.35); }
+  .pan-dots button:focus-visible { outline: 1px solid var(--gold); border-radius: 50%; }
+  .pan-hint { font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--on-dark-soft); display: flex; align-items: center; gap: 10px; animation: nudge 2.2s ease-in-out infinite; }
+  .pan-hint.done { opacity: 0; transition: opacity .5s; animation: none; }
+  @keyframes nudge { 0%, 100% { transform: translateX(0) } 30% { transform: translateX(-6px) } 60% { transform: translateX(6px) } }
   .door { position: absolute; top: 0; bottom: 0; width: 50%; transform-style: preserve-3d; transition: transform 2.4s cubic-bezier(.55,.05,.3,1); }
   .door.l { left: 0; transform-origin: left center; border-radius: 22px 0 0 22px; }
   .door.r { right: 0; transform-origin: right center; border-radius: 0 22px 22px 0; transition-delay: .08s; }
@@ -397,7 +409,7 @@
 
   [hidden] { display: none !important; }
   @media (prefers-reduced-motion: reduce) {
-    .box, .flip, .content > *, .title, .spark, .ico-cal, .ico-clock .hand, .ico-pin, .dress svg, .logo, .sheen.go, .pose, .flicker, .scene3d.flipped .seal.whole::after, .scene3d.strain .seal.whole, .dust i, .rsvp-btn, .rsvp-btn::after { animation: none; }
+    .box, .flip, .content > *, .title, .spark, .ico-cal, .ico-clock .hand, .ico-pin, .dress svg, .logo, .sheen.go, .pan-hint, .pose, .flicker, .scene3d.flipped .seal.whole::after, .scene3d.strain .seal.whole, .dust i, .rsvp-btn, .rsvp-btn::after { animation: none; }
     .rsvp-layer, .reply { transition: none; }
     .door, .inside-shade, .pose, .env3d, .flap, .shadow3d, .contact, .glare { transition: none; }
     .card-mini, .seal, .stage { transition: none; }
@@ -465,7 +477,7 @@
 </main>
 
 <section class="card-wrap" id="invite" hidden aria-live="polite">
-  <div class="zoom" id="zoom">
+  <div class="zoom" id="zoom"><div class="pan" id="pan">
   <div class="flip">
     <div class="back" aria-hidden="true">
       <img id="card-back-full" alt="" hidden>
@@ -503,6 +515,14 @@
     </article>
     </div>
   </div>
+  </div></div>
+  <div class="pan-ui" id="pan-ui" hidden>
+    <div class="pan-dots" role="group" aria-label="Choose a panel">
+      <button type="button" data-i="0" aria-label="Left panel"></button>
+      <button type="button" data-i="1" aria-label="Invitation" aria-current="true"></button>
+      <button type="button" data-i="2" aria-label="Right panel"></button>
+    </div>
+    <div class="pan-hint" id="pan-hint">&lsaquo;&nbsp; Swipe to see more &nbsp;&rsaquo;</div>
   </div>
   <div class="actions" id="actions"></div>
   <button class="replay" id="replay" type="button">Open the envelope again</button>
@@ -817,7 +837,7 @@
       gate.classList.add("open");
       const k = Math.min(1, (window.innerWidth - 24) / (2 * zoom.offsetWidth));
       zoom.style.transform = `scale(${k})`;
-      setTimeout(() => { if (!invite.hidden) zoom.style.transform = ""; }, reduced ? 0 : 3600);   // then pushes back in to read
+      setTimeout(() => { if (!invite.hidden) { zoom.style.transform = ""; setTimeout(() => PAN.enable(), reduced ? 0 : 1600); } }, reduced ? 0 : 3600);   // then pushes back in to read
     }, reduced ? 0 : 2300);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitCard);
   }
@@ -825,6 +845,7 @@
     if (!reduced) { invite.classList.add("leaving"); await wait(560); }
     invite.classList.remove("leaving");
     tilt.card = false;
+    PAN.disable();
     invite.querySelector(".flip").style.removeProperty("--cardX"); invite.querySelector(".flip").style.removeProperty("--cardY");
     box.classList.add("resetting");
     invite.hidden = true;
@@ -848,6 +869,73 @@
   box.addEventListener("click", open);
   box.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } });
   document.getElementById("replay").addEventListener("click", resetEnvelope);
+
+  // ---- swipe across the open gatefold on narrow screens ----
+  const PAN = (() => {
+    const el = document.getElementById("pan"), ui = document.getElementById("pan-ui"), hint = document.getElementById("pan-hint");
+    const dots = [...ui.querySelectorAll("button")];
+    let x = 0, max = 0, on = false, drag = null, swallowClick = false;
+    function set(v, animate) {
+      el.style.transition = animate ? "" : "none";
+      el.style.transform = v ? `translate3d(${v}px,0,0)` : "";
+      x = v;
+      const i = !on ? 1 : v > max / 2 ? 0 : v < -max / 2 ? 2 : 1;
+      dots.forEach((d, k) => d.setAttribute("aria-current", String(k === i)));
+    }
+    function go(i) { if (on) { set([max, 0, -max][i], true); hint.classList.add("done"); } }
+    function measure() {
+      const W = invite.querySelector(".flip").offsetWidth;
+      max = Math.max(0, (2 * W - (innerWidth - 32)) / 2);
+      on = max > 6;
+      ui.hidden = !on; invite.classList.toggle("pannable", on);
+      if (!on) set(0, false); else if (x) set(Math.sign(x) * max, false);
+    }
+    function enable() { if (invite.hidden) return; measure(); }
+    function disable() { on = false; ui.hidden = true; invite.classList.remove("pannable", "dragging"); hint.classList.remove("done"); set(0, false); }
+    dots.forEach(d => d.addEventListener("click", () => go(+d.dataset.i)));
+    const zone = invite.querySelector(".zoom");
+    zone.addEventListener("pointerdown", e => { if (!on || e.button > 0) return; drag = { x0: e.clientX, y0: e.clientY, p0: x, t0: performance.now(), moving: false, id: e.pointerId }; });
+    zone.addEventListener("pointermove", e => {
+      if (!drag || e.pointerId !== drag.id) return;
+      const dx = e.clientX - drag.x0, dy = e.clientY - drag.y0;
+      if (!drag.moving) {
+        if (Math.abs(dx) < 8 || Math.abs(dx) < Math.abs(dy)) return;
+        drag.moving = true; invite.classList.add("dragging"); try { zone.setPointerCapture(e.pointerId); } catch {}
+      }
+      let v = drag.p0 + dx;
+      if (v > max) v = max + (v - max) * .3;
+      if (v < -max) v = -max + (v + max) * .3;
+      set(v, false); drag.last = { dx, t: performance.now() };
+    });
+    function end(e) {
+      if (!drag) return;
+      if (drag.moving) {
+        const dt = Math.max(1, performance.now() - drag.t0), vel = (drag.last ? drag.last.dx : 0) / dt;
+        const aim = x + vel * 180;
+        const targets = [max, 0, -max];
+        let best = 0; targets.forEach((t, i) => { if (Math.abs(aim - t) < Math.abs(aim - targets[best])) best = i; });
+        set(targets[best], true); hint.classList.add("done");
+        swallowClick = true; setTimeout(() => swallowClick = false, 50);
+        invite.classList.remove("dragging");
+      } else if (on && e && e.type === "pointerup") {
+        // a tap on a panel peeking at the edge brings it into view
+        const r = invite.querySelector("#card").getBoundingClientRect();
+        if (e.clientX < r.left - 4 && x <= 0) go(x < 0 ? 1 : 0);
+        else if (e.clientX > r.right + 4 && x >= 0) go(x > 0 ? 1 : 2);
+      }
+      drag = null;
+    }
+    zone.addEventListener("pointerup", end); zone.addEventListener("pointercancel", end);
+    zone.addEventListener("click", e => { if (swallowClick) { e.stopPropagation(); e.preventDefault(); } }, true);
+    document.addEventListener("keydown", e => {
+      if (!on || invite.hidden || !document.getElementById("rsvp").hidden) return;
+      const i = x > max / 2 ? 0 : x < -max / 2 ? 2 : 1;
+      if (e.key === "ArrowLeft") go(Math.max(0, i - 1));
+      if (e.key === "ArrowRight") go(Math.min(2, i + 1));
+    });
+    addEventListener("resize", () => { if (on || !ui.hidden) measure(); });
+    return { enable, disable };
+  })();
 
   // ---- RSVP reply card ----
   const RSVP = (() => {
