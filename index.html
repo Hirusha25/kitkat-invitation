@@ -265,8 +265,11 @@
   .door { position: absolute; top: 0; bottom: 0; width: 50%; transform-style: preserve-3d; transition: transform 2.4s cubic-bezier(.55,.05,.3,1); }
   .door.l { left: 0; transform-origin: left center; border-radius: 22px 0 0 22px; }
   .door.r { right: 0; transform-origin: right center; border-radius: 0 22px 22px 0; transition-delay: .08s; }
-  .gate.open .door.l { transform: rotateY(-179deg); }
-  .gate.open .door.r { transform: rotateY(179deg); }
+  .gate.open .door.l { transform: rotateY(-152deg); }
+  .gate.open .door.r { transform: rotateY(152deg); }
+  .gate.open .door .face.b::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 4;
+    background: linear-gradient(var(--fold, 90deg), rgba(0,0,0,.28) 0%, rgba(0,0,0,0) 45%); }
+  .door.l .face.b { --fold: 270deg; }
   .door, .door .face { transition-property: transform, border-radius; }
   .door .face { transition: border-radius .8s ease 1.4s; }
   .gate.open .door.l, .gate.open .door.r, .gate.open .door .face, .gate.open .door .face.b { border-radius: 22px; }
