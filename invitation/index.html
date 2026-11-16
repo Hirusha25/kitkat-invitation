@@ -957,19 +957,20 @@
     // other half lets go, then thinning out to the last crumbs. Built once, sample by sample.
     let crunchBuf = null;
     function makeCrunch() {
-      const sr = ctx.sampleRate, len = Math.floor(sr * .45), buf = ctx.createBuffer(1, len, sr), d = buf.getChannelData(0);
+      const SLOW = 2.1;                                   // the break plays out slowly, so every bit of it is heard
+      const sr = ctx.sampleRate, len = Math.floor(sr * .45 * SLOW), buf = ctx.createBuffer(1, len, sr), d = buf.getChannelData(0);
       const grain = (pos, amp, ms) => {
         const n = Math.max(2, Math.floor(sr * ms / 1000));
         for (let i = 0; i < n && pos + i < len; i++) d[pos + i] += (Math.random() * 2 - 1) * amp * Math.exp(-i / (n * .22));
       };
-      const rateAt = (s) => s < .018 ? 3000 : s < .085 ? 700 * Math.exp(-(s - .018) * 9) + 260
+      const rateAt0 = (s) => s < .018 ? 3000 : s < .085 ? 700 * Math.exp(-(s - .018) * 9) + 260
         : s < .11 ? 2200 : 420 * Math.exp(-(s - .11) * 8) + 18;
-      const ampAt = (s) => s < .018 ? 1 : s < .085 ? .7 * Math.exp(-(s - .018) * 6) + .12 : s < .11 ? .75 : .55 * Math.exp(-(s - .11) * 7) + .05;
+      const ampAt0 = (s) => s < .018 ? 1 : s < .085 ? .7 * Math.exp(-(s - .018) * 6) + .12 : s < .11 ? .75 : .55 * Math.exp(-(s - .11) * 7) + .05;
       let pos = 0;
       while (pos < len) {
-        const s = pos / sr;
-        grain(pos, ampAt(s) * Math.pow(Math.random(), 1.6), .25 + Math.random() * 2.2);
-        pos += Math.max(1, Math.floor(-Math.log(1 - Math.random()) / rateAt(s) * sr));
+        const s = pos / sr / SLOW;
+        grain(pos, ampAt0(s) * Math.pow(Math.random(), 1.6), .3 + Math.random() * 2.8);
+        pos += Math.max(1, Math.floor(-Math.log(1 - Math.random()) / (rateAt0(s) / 1.5) * sr));
       }
       let p = 0; for (let i = 0; i < len; i++) p = Math.max(p, Math.abs(d[i]));
       if (p > 0) for (let i = 0; i < len; i++) d[i] /= p;
@@ -991,7 +992,7 @@
       const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 8000;
       const cg = ctx.createGain(); cg.gain.value = .55;
       cr.connect(hp); hp.connect(pk); pk.connect(lp); lp.connect(cg); cg.connect(snapOut); cr.start(t0);
-      try { bus.gain.cancelScheduledValues(t0); bus.gain.setValueAtTime(bus.gain.value, t0); bus.gain.linearRampToValueAtTime(.35, t0 + .015); bus.gain.setValueAtTime(.35, t0 + .35); bus.gain.linearRampToValueAtTime(.9, t0 + .9); } catch {}
+      try { bus.gain.cancelScheduledValues(t0); bus.gain.setValueAtTime(bus.gain.value, t0); bus.gain.linearRampToValueAtTime(.35, t0 + .015); bus.gain.setValueAtTime(.35, t0 + .8); bus.gain.linearRampToValueAtTime(.9, t0 + 1.4); } catch {}
       const burst = (t, dur, type, freq, q, vol) => {
         const src = ctx.createBufferSource(); src.buffer = noiseBuf;
         const flt = ctx.createBiquadFilter(); flt.type = type; flt.frequency.value = freq; flt.Q.value = q;
@@ -1013,7 +1014,7 @@
         ping(t + .004, 210, 90, .07, .55 * v, "sine");           // knock of the bar
       };
       snap(t0, 1);
-      snap(t0 + .085, .65);
+      snap(t0 + .18, .7);
     }
     // Drop the silent track and the lock-screen card completely (pausing alone leaves the card up on iPhone).
     let idle = null;
