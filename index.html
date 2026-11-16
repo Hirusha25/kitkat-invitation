@@ -751,10 +751,30 @@
     const paint = () => { btn.setAttribute("aria-pressed", muted ? "true" : "false"); btn.setAttribute("aria-label", muted ? "Unmute sounds" : "Mute sounds"); };
     paint();
     btn.addEventListener("click", e => { e.stopPropagation(); muted = !muted; try { localStorage.setItem("invite-muted", muted ? "1" : "0"); } catch {} paint(); if (!muted) { ensure(); chime(0, .5); } });
+    // iPhone: web sound is silenced by the ring/silent switch unless the page plays as media.
+    // Declaring a playback session and starting a silent looping track (inside the guest's tap) lifts that.
+    let keepAlive = null;
+    function unlockMedia() {
+      try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch {}
+      if (keepAlive) { keepAlive.play().catch(() => {}); return; }
+      try {
+        const n = 1600, buf = new ArrayBuffer(44 + n), v = new DataView(buf);
+        const w = (o, str) => { for (let i = 0; i < str.length; i++) v.setUint8(o + i, str.charCodeAt(i)); };
+        w(0, "RIFF"); v.setUint32(4, 36 + n, true); w(8, "WAVE"); w(12, "fmt "); v.setUint32(16, 16, true);
+        v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, 8000, true); v.setUint32(28, 8000, true);
+        v.setUint16(32, 1, true); v.setUint16(34, 8, true); w(36, "data"); v.setUint32(40, n, true);
+        for (let i = 0; i < n; i++) v.setUint8(44 + i, 128);
+        keepAlive = new Audio(URL.createObjectURL(new Blob([buf], { type: "audio/wav" })));
+        keepAlive.loop = true; keepAlive.setAttribute("playsinline", ""); keepAlive.setAttribute("x-webkit-airplay", "deny");
+        keepAlive.play().catch(() => {});
+      } catch {}
+    }
     function ensure() {
-      if (ctx) { if (ctx.state === "suspended") ctx.resume(); return ctx; }
+      unlockMedia();
+      if (ctx) { if (ctx.state !== "running") ctx.resume().catch(() => {}); return ctx; }
       const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null;
       ctx = new AC();
+      if (ctx.state !== "running") ctx.resume().catch(() => {});
       const len = ctx.sampleRate * 2; noiseBuf = ctx.createBuffer(1, len, ctx.sampleRate);
       const d = noiseBuf.getChannelData(0); let b0 = 0, b1 = 0, b2 = 0;
       for (let i = 0; i < len; i++) { const w = Math.random() * 2 - 1; b0 = .997 * b0 + .029 * w; b1 = .985 * b1 + .032 * w; b2 = .95 * b2 + .048 * w; d[i] = (b0 + b1 + b2 + w * .3) * .35; }
@@ -898,8 +918,8 @@
     if (opening) return;
     opening = true;
     hint.style.opacity = "0"; hint.style.pointerEvents = "none";
-    askMotion();
     SFX.ensure();
+    askMotion();
     if (reduced) return reveal();
     SFX.slide(0);
     box.classList.add("lifted");           // the envelope is picked up off the table
