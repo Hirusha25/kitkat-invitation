@@ -726,7 +726,7 @@
     venueLabel: "The Atrium, Cinnamon Grand Colombo",
     dress: "Business Casual Attire",
     nameOnCard: true,
-    defaultGuest: "Mr. Vinada Thabrew",   // shown when a link carries no name
+    defaultGuest: "",   // shown when a link carries no name (empty = the nameless "You are Invited" card)
     calendarTitle: "KitKat — A New Chapter",
     calendarStart: "20261207T163000",
     calendarEnd:   "20261207T193000",
@@ -788,7 +788,7 @@
       try { raw = decodeURIComponent(location.hash.slice(1)); } catch { raw = location.hash.slice(1); }
       raw = raw.replace(/[-_+]+/g, " ");
     }
-    return raw.trim().replace(/\s+/g, " ");
+    return raw.replace(/\.(?=\p{L})/gu, ". ").trim().replace(/\s+/g, " ");   // "Mr.Vinada" -> "Mr. Vinada"
   }
   const envName = document.getElementById("env-name");
   const dear = document.getElementById("dear");
@@ -1375,7 +1375,7 @@
   try { baseInput.value = localStorage.getItem("invite-base-link") || ""; } catch {}
   if (!baseInput.value) baseInput.value = (/claude\.ai$/.test(location.hostname) || location.protocol === "file:") ? BASE_LINK : location.origin + location.pathname;
   baseInput.addEventListener("change", () => { try { localStorage.setItem("invite-base-link", baseInput.value.trim()); } catch {} });
-  const slug = name => name.trim().replace(/&/g, " and ").replace(/[^\p{L}\p{N}.]+/gu, "-").replace(/^-+|-+$/g, "");
+  const slug = name => name.trim().replace(/&/g, " and ").replace(/[^\p{L}\p{N}.]+/gu, "-").replace(/\.-/g, ".").replace(/^-+|-+$/g, "");   // "Mr. Vinada Thabrew" -> "Mr.Vinada-Thabrew"
   let built = [];
   function say(msg) { toast.textContent = msg; setTimeout(() => { if (toast.textContent === msg) toast.textContent = ""; }, 2400); }
   async function copyText(text, okMsg) {
