@@ -287,6 +287,10 @@
   .door .face.b .wing-logo { width: 26cqw; filter: drop-shadow(0 6px 10px rgba(0,0,0,.4)); }
   .door .face.b .wing-rule { width: 10cqw; height: 1px; background: #e8c98a; opacity: .7; }
   .door .face::after { content: ""; position: absolute; inset: 0; transition: background 2.4s cubic-bezier(.55,.05,.3,1); }
+  /* the closed cover's outer corners round to match the card */
+  .door.l .face { border-radius: 22px 0 0 22px; }
+  .door.r .face { border-radius: 0 22px 22px 0; }
+  .door .face::before, .door .face::after { -webkit-backface-visibility: hidden; backface-visibility: hidden; border-radius: inherit; }
   .door .face.b::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: rgba(10,0,2,.7); transition: opacity 2.4s cubic-bezier(.55,.05,.3,1); pointer-events: none; z-index: 3; }
   .gate.open .door .face.b::before { opacity: 0; }
   .gate.open .door.l .face.f::after, .gate.open .door.r .face.f::after { background: rgba(10,0,2,.55); }
