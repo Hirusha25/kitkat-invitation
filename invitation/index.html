@@ -834,7 +834,7 @@
 
   // ---- Sound: synthesised in the page, so nothing has to load ----
   const SFX = (() => {
-    let ctx = null, noiseBuf = null, muted = false, bus = null;
+    let ctx = null, noiseBuf = null, muted = false, bus = null, asleep = false;   // asleep: page hidden, so no sound may start
     try { muted = localStorage.getItem("invite-muted") === "1"; } catch {}
     const btn = document.getElementById("mute");
     const paint = () => { btn.setAttribute("aria-pressed", muted ? "true" : "false"); btn.setAttribute("aria-label", muted ? "Unmute sounds" : "Mute sounds"); };
@@ -845,7 +845,7 @@
     let keepAlive = null;
     function unlockMedia() {
       try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch {}
-      if (keepAlive) { keepAlive.play().catch(() => {}); return; }
+      if (keepAlive) { keepAlive.play().catch(() => {}); if ("mediaSession" in navigator && !navigator.mediaSession.metadata) nowPlaying(); return; }
       try {
         const n = 1600, buf = new ArrayBuffer(44 + n), v = new DataView(buf);
         const w = (o, str) => { for (let i = 0; i < str.length; i++) v.setUint8(o + i, str.charCodeAt(i)); };
@@ -882,6 +882,7 @@
       } catch {}
     }
     function ensure() {
+      if (asleep) return null;              // a timer firing while the page is hidden must not restart sound
       unlockMedia();
       if (ctx) { if (ctx.state !== "running") ctx.resume().catch(() => {}); return ctx; }
       const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null;
@@ -952,6 +953,30 @@
       o.connect(g); g.connect(bus); o.start(t); o.stop(t + 1);
       noise(at, .5, "lowpass", 900, 200, .7, (vol || .3) * .3, .01, .1);
     }
+    // When the guest leaves the page (switches app, minimises, locks the phone or closes the tab),
+    // stop everything: the silent keep-alive track, the sound engine and the lock-screen "now playing"
+    // card. Bring it back when they return, unless they had muted.
+    function sleep() {
+      if (asleep) return; asleep = true;
+      try { if (keepAlive) keepAlive.pause(); } catch {}
+      try { if (ctx && ctx.state === "running") ctx.suspend().catch(() => {}); } catch {}
+      try {
+        if ("mediaSession" in navigator) {
+          navigator.mediaSession.playbackState = "none";
+          navigator.mediaSession.metadata = null;
+          ["play", "pause"].forEach((a) => { try { navigator.mediaSession.setActionHandler(a, null); } catch {} });
+        }
+      } catch {}
+    }
+    function wake() {
+      if (!asleep) return; asleep = false;
+      if (!keepAlive && !ctx) return;          // sound never started on this visit
+      try { if (ctx && ctx.state !== "running") ctx.resume().catch(() => {}); } catch {}
+      if (keepAlive && !muted) { keepAlive.play().catch(() => {}); nowPlaying(); }
+    }
+    document.addEventListener("visibilitychange", () => { if (document.hidden) sleep(); else wake(); });
+    addEventListener("pagehide", sleep);
+    addEventListener("pageshow", (e) => { if (e.persisted && !document.hidden) wake(); });
     return {
       crack(at = 0) { tone(at, 1900, .05, .35, "square"); tone(at + .02, 700, .08, .25, "triangle"); noise(at, .22, "bandpass", 2600, 900, 1.2, .5, .005, .15); noise(at + .05, .5, "highpass", 5000, 3000, .8, .12, .02, .2); },
       flap(at = 0) { noise(at, 1.1, "lowpass", 1800, 500, .9, .22, .25, .45); },
