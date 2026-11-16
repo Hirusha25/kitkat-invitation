@@ -338,7 +338,7 @@
   .card {
     position: relative; width: 100%; aspect-ratio: 955 / 1700;
     border-radius: 22px; overflow: hidden;
-    background: #5a0a12 url(img/card-bg.webp) center / cover no-repeat;
+    background: #5a0a12 url(img/card-still.webp) center / cover no-repeat;
     color: #fff; text-align: center;
     box-shadow: 0 30px 60px rgba(0,0,0,.65);
     container-type: inline-size;
@@ -346,7 +346,7 @@
     --cg: #e8c98a;
   }
   /* the chocolate moves once the panels are open; the still image stays underneath as the fallback */
-  .card-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; z-index: 0; opacity: 0; pointer-events: none; transition: opacity 1.2s ease; }
+  .card-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; z-index: 0; opacity: 0; pointer-events: none; }
   .card-video.on { opacity: 1; }
   .content { z-index: 1; }
   .content { position: absolute; inset: 0; padding: 16.5cqw 5cqw 0; display: flex; flex-direction: column; align-items: center; }
@@ -615,7 +615,7 @@
     <div class="inside-shade" aria-hidden="true"></div>
     <div class="sheen" aria-hidden="true"></div>
     <article class="card" id="card">
-      <video class="card-video" id="card-video" muted playsinline loop preload="none" poster="img/card-bg.webp" aria-hidden="true" disablepictureinpicture disableremoteplayback hidden></video>
+      <video class="card-video" id="card-video" muted playsinline loop preload="none" poster="img/card-still.webp" aria-hidden="true" disablepictureinpicture disableremoteplayback hidden></video>
       <div class="content">
         <div class="title-wrap">
           <svg class="spark s1" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg><svg class="spark s2" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg><svg class="spark s3" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg><svg class="spark s4" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg>
@@ -703,7 +703,7 @@
 <script>
   // ---- show the scene only once its images are ready (mobile data can be slow) ----
   (() => {
-    const srcs = ["img/scene.jpg", "img/env-front.jpg", "img/env-back.jpg", "img/liner.jpg", "img/seal-kitkat.webp", "img/card-bg.webp", "img/kitkat-logo.png", "img/paper.webp"];
+    const srcs = ["img/scene.jpg", "img/env-front.jpg", "img/env-back.jpg", "img/liner.jpg", "img/seal-kitkat.webp", "img/card-still.webp", "img/kitkat-logo.png", "img/paper.webp"];
     const one = src => new Promise(res => { const i = new Image(); i.onload = i.onerror = () => (i.decode ? i.decode().catch(() => {}) : Promise.resolve()).then(res); i.src = src; });
     const fonts = document.fonts && document.fonts.ready ? document.fonts.ready.catch(() => {}) : Promise.resolve();
     const go = () => { if (!document.body.classList.contains("ready")) { document.body.classList.add("ready"); setTimeout(() => { const l = document.getElementById("loader"); if (l) l.hidden = true; }, 900); } };
@@ -1109,7 +1109,8 @@
       if (invite.hidden) return;
       gate.classList.add("open");
       TRACK.send("card");
-      setTimeout(() => { if (!invite.hidden) { invite.classList.add("live"); CHOC.start(); } }, reduced ? 0 : 2500);
+      CHOC.start();
+      setTimeout(() => { if (!invite.hidden) invite.classList.add("live"); }, reduced ? 0 : 2500);
       const k = Math.min(1, (window.innerWidth - 24) / (2 * zoom.offsetWidth));
       zoom.style.transform = `scale(${k})`;
       setTimeout(() => { if (!invite.hidden) { zoom.style.transform = ""; setTimeout(() => PAN.enable(), reduced ? 0 : 1600); } }, reduced ? 0 : 3600);   // then pushes back in to read
@@ -1217,11 +1218,32 @@
   // ---- the chocolate splash, as a looping video ----
   const CHOC = (() => {
     const v = document.getElementById("card-video");
-    let wanted = false;
-    v.addEventListener("playing", () => { if (wanted) v.classList.add("on"); });
+    let wanted = false, t0 = 0, raf = 0, showTimer = 0;
+    const SHOW_AFTER = 900;                               // the panels are well under way by now
+    function ease() {                                     // start almost still and speed up to normal pace
+      cancelAnimationFrame(raf);
+      const begin = performance.now(), D = 1600, from = 0.12;
+      const step = (now) => {
+        if (!wanted) return;
+        const k = Math.min(1, (now - begin) / D), e = k * k * (3 - 2 * k);
+        try { v.playbackRate = from + (1 - from) * e; } catch {}
+        if (k < 1) raf = requestAnimationFrame(step);
+      };
+      raf = requestAnimationFrame(step);
+    }
+    function go() {                                       // the first frame is the card's own picture, so showing it changes nothing on screen
+      if (!wanted || !v.paused) return;
+      clearTimeout(showTimer);
+      showTimer = setTimeout(() => {
+        if (!wanted) return;
+        try { v.playbackRate = 0.12; } catch {}
+        v.muted = true;
+        v.play().then(() => { v.classList.add("on"); ease(); }).catch(() => {});   // phones that block video (e.g. Low Power Mode) keep the still picture
+      }, Math.max(0, SHOW_AFTER - (performance.now() - t0)));
+    }
     document.addEventListener("visibilitychange", () => { if (!wanted) return; if (document.hidden) v.pause(); else v.play().catch(() => {}); });
     return {
-      prepare() {                                         // start downloading as the envelope opens, so it is ready in time
+      prepare() {                                         // start downloading as the seal breaks, so it is ready in time
         if (reduced || !v || v.querySelector("source")) return;
         [["img/chocolate.mp4", "video/mp4"], ["img/chocolate.webm", "video/webm"]].forEach(([src, type]) => { const el = document.createElement("source"); el.src = src; el.type = type; v.append(el); });
         v.preload = "auto"; v.load();
@@ -1229,10 +1251,14 @@
       start() {
         if (reduced || !v) return;
         this.prepare();
-        wanted = true; v.hidden = false;
-        v.muted = true; v.play().catch(() => {});       // phones that block video (e.g. Low Power Mode) keep the still image
+        wanted = true; t0 = performance.now(); v.hidden = false;
+        try { v.currentTime = 0; } catch {}
+        if (v.readyState >= 4) return go();
+        const ready = () => { v.removeEventListener("canplaythrough", ready); go(); };
+        v.addEventListener("canplaythrough", ready);
+        setTimeout(() => { if (wanted && v.paused && v.readyState >= 3) ready(); }, 5000);   // slow connections: play once enough is in
       },
-      stop() { wanted = false; if (!v) return; v.classList.remove("on"); v.pause(); v.hidden = true; }
+      stop() { wanted = false; cancelAnimationFrame(raf); clearTimeout(showTimer); if (!v) return; v.classList.remove("on"); v.pause(); try { v.currentTime = 0; v.playbackRate = 1; } catch {} v.hidden = true; }
     };
   })();
 
