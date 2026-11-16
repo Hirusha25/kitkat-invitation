@@ -192,16 +192,14 @@
   @keyframes burst { 0% { opacity: 0; transform: translate(0,0) scale(.4) } 10% { opacity: 1 } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(.2) } }
 
   .hint { display: flex; align-items: center; gap: 14px; font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: var(--on-dark-soft); transition: opacity .4s; text-shadow: 0 1px 3px rgba(0,0,0,.6); }
-  .cta { position: relative; display: inline-flex; align-items: center; gap: 12px; margin-top: 4px; padding: 14px 18px; cursor: pointer;
-    border: 0; background: none; color: #f3d898; font-family: var(--display); font-weight: 700; font-size: 12.5px; letter-spacing: .3em;
-    text-shadow: 0 1px 3px rgba(0,0,0,.9), 0 0 16px rgba(0,0,0,.7); animation: breathe 3.2s ease-in-out 2.4s infinite; }
-  .cta::before, .cta::after { content: ""; width: 34px; height: 1px; flex: none; background: linear-gradient(90deg, rgba(243,216,152,0), rgba(243,216,152,.8)); box-shadow: 0 1px 2px rgba(0,0,0,.6); }
-  .cta::after { background: linear-gradient(90deg, rgba(243,216,152,.8), rgba(243,216,152,0)); }
-  .cta:hover, .cta:focus-visible { outline: none; color: #fff0c8; }
-  .cta:focus-visible span { text-decoration: underline; text-underline-offset: 6px; }
-  .cta svg { width: 16px; height: 16px; flex: none; overflow: visible; filter: drop-shadow(0 1px 2px rgba(0,0,0,.8)); }
-  .cta .finger { fill: #f3d898; }
-  .cta .ripple { display: none; }
+  .cta { position: relative; display: grid; place-items: center; width: 92px; height: 92px; margin-top: 4px; padding: 0; border-radius: 50%; cursor: pointer;
+    border: 1px solid rgba(243,216,152,.9); background: none; color: #f3d898;
+    font-family: var(--display); font-weight: 700; font-size: 10.5px; letter-spacing: .26em; line-height: 1.7; text-indent: .26em; text-align: center;
+    text-shadow: 0 1px 3px rgba(0,0,0,.9), 0 0 14px rgba(0,0,0,.7);
+    box-shadow: 0 0 0 1px rgba(0,0,0,.18), 0 2px 6px rgba(0,0,0,.35), inset 0 0 0 1px rgba(0,0,0,.12); }
+  .cta::before { content: ""; position: absolute; inset: -1px; border-radius: 50%; border: 1px solid rgba(243,216,152,.6); animation: halo 3.2s ease-out 2.6s infinite; pointer-events: none; }
+  .cta:hover, .cta:focus-visible { outline: none; color: #fff0c8; border-color: #fff0c8; }
+  @keyframes halo { 0% { opacity: .8; transform: scale(1) } 65%, 100% { opacity: 0; transform: scale(1.35) } }
   @keyframes breathe { 0%, 100% { opacity: 1 } 50% { opacity: .62 } }
   body.ready .cta { animation: ctaIn .9s cubic-bezier(.22,1,.36,1) 1.2s backwards, breathe 3.2s ease-in-out 2.4s infinite; }
   @keyframes ctaIn { from { opacity: 0; transform: translateY(14px) } }
@@ -213,7 +211,7 @@
 
   /* ---------- The card, flipped to its face ---------- */
   .card-wrap { width: min(100%, 480px); display: flex; flex-direction: column; align-items: center; gap: 20px; perspective: 1600px; }
-  .card-wrap { --t0: 3.6s; }
+  .card-wrap { --t0: 2.5s; }
   .flip { position: relative; width: 100%; transform-style: preserve-3d; will-change: transform; transform: rotateX(var(--cardX, 0deg)) rotateY(var(--cardY, 0deg)); }
   .card-wrap.flying { z-index: 20; }
   .card-wrap.flying .actions, .card-wrap.flying .replay { opacity: 0; }
@@ -222,8 +220,8 @@
   .card-wrap.leaving { opacity: 0; transform: translateY(24px) scale(.96); }
   .scene3d.resetting, .scene3d.resetting * { transition: none !important; }
   @keyframes flip { from { transform: rotateY(180deg) scale(.92) } 50% { transform: rotateY(90deg) scale(1.04) } to { transform: rotateY(0) scale(1) } }
-  .front { position: relative; backface-visibility: hidden; transform-style: preserve-3d; border-radius: 22px; container-type: inline-size; }
-  .gate { position: absolute; inset: 0; z-index: 5; transform-style: preserve-3d; border-radius: 22px; pointer-events: none; }
+  .front { position: relative; backface-visibility: hidden; -webkit-backface-visibility: hidden; transform-style: preserve-3d; border-radius: 22px; container-type: inline-size; }
+  .gate { position: absolute; inset: 0; z-index: 5; transform-style: preserve-3d; border-radius: 22px; pointer-events: none; transform: translateZ(2px); }
   .zoom { width: 100%; transform-style: preserve-3d; transition: transform 2.2s cubic-bezier(.5,.05,.3,1); }
   .pan { width: 100%; transform-style: preserve-3d; transition: transform .65s cubic-bezier(.22,1,.36,1); touch-action: pan-y; }
   .card-wrap.pannable .pan { cursor: grab; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
@@ -245,7 +243,7 @@
   .door, .door .face { transition-property: transform, border-radius; }
   .door .face { transition: border-radius .8s ease 1.4s; }
   .gate.open .door.l, .gate.open .door.r, .gate.open .door .face, .gate.open .door .face.b { border-radius: 22px; }
-  .door .face { position: absolute; inset: 0; backface-visibility: hidden; background: #5a0d16 url(img/paper.webp) center / 200% 100% no-repeat; overflow: hidden; }
+  .door .face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; background: #5a0d16 url(img/paper.webp) center / 200% 100% no-repeat; overflow: hidden; }
   .door.l .face.f { background-position: 0 0; }
   .door.r .face.f { background-position: 100% 0; }
   .door .face.b { transform: rotateY(180deg); background-position: center; background-size: cover; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 8cqw 5cqw; gap: 2.5cqw; box-shadow: inset 0 0 40px rgba(0,0,0,.45); }
@@ -274,22 +272,14 @@
   .door.r .cover-text { left: -100%; }
   .door .cover-text.top { top: 50%; transform: translateY(-22cqw); }
   .door .cover-text.bottom { top: 50%; transform: translateY(18cqw); }
-  .sheen { position: absolute; inset: 0; z-index: 6; border-radius: 22px; pointer-events: none; background: linear-gradient(105deg, transparent 35%, rgba(255,245,220,.5) 50%, transparent 65%); background-size: 300% 100%; background-position: 150% 0; mix-blend-mode: screen; }
+  .sheen { position: absolute; inset: 0; z-index: 6; border-radius: 22px; pointer-events: none; transform: translateZ(3px); background: linear-gradient(105deg, transparent 35%, rgba(255,245,220,.5) 50%, transparent 65%); background-size: 300% 100%; background-position: 150% 0; mix-blend-mode: screen; }
   .sheen.go { animation: sheen 1.4s ease-in-out both; }
   @keyframes sheen { from { background-position: 150% 0 } to { background-position: -150% 0 } }
-  .inside-shade { position: absolute; inset: 0; z-index: 4; border-radius: 22px; background: rgba(0,0,0,.55); transition: opacity 2.2s ease .3s; pointer-events: none; }
+  .inside-shade { position: absolute; inset: 0; z-index: 4; border-radius: 22px; background: rgba(0,0,0,.55); transform: translateZ(1px); transition: opacity 2.2s ease .3s; pointer-events: none; }
   .gate.open ~ .inside-shade, .card-wrap.open .inside-shade { opacity: 0; }
-  .flip .back { position: absolute; inset: 0; border-radius: 22px; background: var(--cream); transform: translateZ(-2.5px) rotateY(180deg); backface-visibility: hidden; overflow: hidden; box-shadow: 0 24px 50px rgba(0,0,0,.55); }
-  .flip .front { transform: translateZ(2.5px); }
-  .cedge { position: absolute; backface-visibility: visible; -webkit-backface-visibility: visible; pointer-events: none;
-    background: linear-gradient(var(--dir, 180deg), #7a5a22 0%, #d9b866 30%, #fff0c0 50%, #d9b866 70%, #7a5a22 100%); }
-  .c-top, .c-bot { left: 18px; right: 18px; height: 5px; transform: rotateX(90deg); }
-  .c-top { top: -2.5px; } .c-bot { top: calc(100% - 2.5px); }
-  .c-l, .c-r { top: 18px; bottom: 18px; width: 5px; transform: rotateY(90deg); --dir: 90deg; }
-  .c-l { left: -2.5px; } .c-r { left: calc(100% - 2.5px); }
-  .fshade { position: absolute; inset: 0; border-radius: 22px; pointer-events: none; background: #120204; opacity: 0; z-index: 30; }
+  .flip .back { position: absolute; inset: 0; border-radius: 22px; background: var(--cream); transform: rotateY(180deg); backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; box-shadow: 0 24px 50px rgba(0,0,0,.45); }
   .flip .back img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-  .flip .card { backface-visibility: hidden; }
+  .flip .card, .flip .inside-shade, .flip .sheen { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
 
   .card {
     position: relative; width: 100%; aspect-ratio: 955 / 1700;
@@ -468,7 +458,7 @@
   [hidden] { display: none !important; }
   @media (prefers-reduced-motion: reduce) {
     .loader img, body.ready .scene3d { animation: none; }
-    .box, .flip, .content > *, .nudge, .cta, .title, .spark, .ico-cal, .ico-clock .hand, .ico-pin, .dress svg, .logo, .sheen.go, .pan-hint, .pose, .flicker, .scene3d.flipped .seal.whole::after, .scene3d.strain .seal.whole, .dust i, .rsvp-btn, .rsvp-btn::after { animation: none; }
+    .box, .flip, .content > *, .nudge, .cta, .cta::before, .title, .spark, .ico-cal, .ico-clock .hand, .ico-pin, .dress svg, .logo, .sheen.go, .pan-hint, .pose, .flicker, .scene3d.flipped .seal.whole::after, .scene3d.strain .seal.whole, .dust i, .rsvp-btn, .rsvp-btn::after { animation: none; }
     .rsvp-layer, .reply { transition: none; }
     .door, .inside-shade, .pose, .env3d, .flap, .shadow3d, .contact, .glare { transition: none; }
     .card-mini, .seal, .stage { transition: none; }
@@ -534,23 +524,19 @@
     </div>
   </div>
   <button class="hint cta" id="hint" type="button" aria-label="Tap to open your invitation">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><circle class="ripple" cx="9" cy="6" r="5"/><path class="finger" d="M9 3.2c.9 0 1.6.7 1.6 1.6v5.4l.5-.1c.8-.2 1.6.3 1.8 1.1l.1.3.5-.1c.8-.1 1.5.4 1.7 1.2l.5-.1c.8-.1 1.6.5 1.7 1.3l.3 2.6c.2 1.9-.4 3.7-1.7 5l-.4.4H9.6l-3.4-4.4c-.6-.7-.5-1.8.2-2.4.6-.5 1.5-.5 2.1 0l-.1-10.2c0-.9.7-1.6 1.6-1.6z"/></svg>
-    <span>Tap to open</span>
+    <span>Tap to<br>open</span>
   </button>
 </main>
 
 <section class="card-wrap" id="invite" hidden aria-live="polite">
   <div class="zoom" id="zoom"><div class="pan" id="pan">
   <div class="flip">
-    <div class="cedge c-top"></div><div class="cedge c-bot"></div><div class="cedge c-l"></div><div class="cedge c-r"></div>
     <div class="back" aria-hidden="true">
       <img id="card-back-full" alt="" hidden>
       <svg class="grain" width="100%" height="100%"><rect width="100%" height="100%" filter="url(#grainf)"/></svg>
       <svg class="ornament" viewBox="0 0 100 60"><use href="#orn"/></svg>
-      <div class="fshade" id="shade-back"></div>
     </div>
     <div class="front">
-    <div class="fshade" id="shade-front"></div>
     <div class="gate" id="gate" aria-hidden="true">
       <div class="door l"><div class="face f"><div class="frame"></div><div class="cover-text top">You are invited</div><img class="cover-logo" src="img/kitkat-logo.png" alt=""><div class="cover-text bottom">A New Chapter</div></div>
         <div class="face b"><div class="frame"></div><svg class="orn-wing" viewBox="0 0 100 60"><use href="#orn"/></svg><div class="wing-eyebrow">Especially for</div><div class="wing-script" id="wing-name"></div><div class="wing-rule"></div><div class="wing-small">We would be honoured by your presence as a new chapter begins</div></div></div>
@@ -948,11 +934,8 @@
         { transform: `translate(${dx * .35}px, ${dy * .45 - to.height * .06}px) translateZ(${lift}px) rotateZ(-30deg) rotateY(110deg) scale(${s0 + (1 - s0) * .45})`, offset: .5, easing: "cubic-bezier(.2,.6,.15,1)" },
         { transform: "none", offset: 1 }
       ], { duration: FLIGHT, fill: "backwards" });
-      // light falls off each face as it turns away from the viewer
-      document.getElementById("shade-back").animate([{ opacity: 0 }, { opacity: .55, offset: .5 }, { opacity: .55 }], { duration: FLIGHT, easing: "ease-in" });
-      document.getElementById("shade-front").animate([{ opacity: .6 }, { opacity: .6, offset: .5 }, { opacity: 0 }], { duration: FLIGHT, easing: "ease-out" });
       SFX.flip(.25);
-      SFX.reveal(FLIGHT, 2.3, 3.6);
+      SFX.reveal(FLIGHT, 2.3, 2.6);
       setTimeout(() => invite.querySelector(".sheen").classList.add("go"), FLIGHT * .55);
       setTimeout(() => buzz(14), FLIGHT - 60);
       const landed = () => { invite.classList.remove("flying"); setTimeout(() => { if (!invite.hidden) tilt.card = true; }, 5200); };
