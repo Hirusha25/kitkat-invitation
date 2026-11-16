@@ -103,7 +103,11 @@
   .photo.crack .seal.top { transform: translate(-50%, -57%) rotate(-5deg); }
   .photo.crack .seal.bottom { transform: translate(-50%, -45%) rotate(3deg); }
 
-  .address { position: absolute; left: 10%; right: 10%; top: 58%; z-index: 5; text-align: center; pointer-events: none; }
+  .front-face { position: absolute; inset: 0; z-index: 20; }
+  .photo:not(.show-back) > :not(.front-face) { visibility: hidden; }
+  .photo.show-back .front-face { display: none; }
+  .address { position: absolute; left: 10%; right: 10%; top: 41%; z-index: 5; text-align: center; pointer-events: none; }
+  .address .rule { width: 34%; height: 1px; margin: 6px auto 0; background: linear-gradient(90deg, transparent, #c9a24f, transparent); }
   .address .to { font-size: clamp(9px, 2.4vw, 11px); letter-spacing: .3em; text-transform: uppercase; color: var(--gold); opacity: .75; }
   .address .name {
     font-family: var(--script); font-size: clamp(28px, 9vw, 48px); line-height: 1.1; margin-top: -4px; padding: .32em .1em .2em;
@@ -129,6 +133,9 @@
   .door.r { right: 0; transform-origin: right center; border-radius: 0 22px 22px 0; transition-delay: .08s; }
   .gate.open .door.l { transform: rotateY(-179deg); }
   .gate.open .door.r { transform: rotateY(179deg); }
+  .door, .door .face { transition-property: transform, border-radius; }
+  .door .face { transition: border-radius .8s ease 1.4s; }
+  .gate.open .door.l, .gate.open .door.r, .gate.open .door .face, .gate.open .door .face.b { border-radius: 22px; }
   .door .face { position: absolute; inset: 0; backface-visibility: hidden; background: #5a0d16 url(img/paper.webp) center / 200% 100% no-repeat; overflow: hidden; }
   .door.l .face.f { background-position: 0 0; }
   .door.r .face.f { background-position: 100% 0; }
@@ -377,18 +384,22 @@
         <img class="layer" src="img/pocket.webp" alt="">
         <div class="seal bottom"><img src="img/seal.webp" alt=""></div>
       </div>
-      <div class="address">
-        <div class="to">For</div>
-        <div class="name" id="env-name">You</div>
-      </div>
       <div class="layer flap-wrap">
         <img class="layer" src="img/flap.webp" alt="">
         <div class="seal top"><img src="img/seal.webp" alt=""></div>
       </div>
       <div class="dust" id="dust" aria-hidden="true"></div>
+      <div class="front-face">
+        <img class="layer base" src="img/front.jpg" alt="">
+        <div class="address">
+          <div class="to">For</div>
+          <div class="name" id="env-name">You</div>
+          <div class="rule"></div>
+        </div>
+      </div>
     </div>
   </div>
-  <div class="hint" id="hint">Tap the seal to open</div>
+  <div class="hint" id="hint">Tap to open</div>
 </main>
 
 <section class="card-wrap" id="invite" hidden aria-live="polite">
@@ -424,8 +435,8 @@
           <div class="detail"><svg class="ico-pin" viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><div><div class="lab">Venue</div><div class="val" data-f="venueLabel"></div></div></div>
         </div>
         <div class="dress"><svg viewBox="0 0 24 24"><path d="M12 4a2 2 0 1 1 2 2c-1 .3-2 1-2 2v1"/><path d="M12 9 3 15.5a1 1 0 0 0 .6 1.8h16.8a1 1 0 0 0 .6-1.8L12 9z"/></svg><span>Dress Code</span><span class="sep"></span><span data-f="dress"></span></div>
-        <button class="rsvp-btn" id="rsvp-open" type="button">RSVP</button>
         <img class="logo" src="img/kitkat-logo.png" alt="Nestlé KitKat">
+        <button class="rsvp-btn" id="rsvp-open" type="button">RSVP</button>
       </div>
     </article>
     </div>
@@ -656,14 +667,30 @@
     box.addEventListener("pointerleave", () => { photo.style.transform = ""; });
   }
 
+  async function flipOver() {
+    photo.style.transition = "none"; photo.style.transform = "";
+    const a1 = photo.animate([{ transform: "rotateY(0deg) scale(1)" }, { transform: "rotateY(90deg) scale(1.07)" }],
+      { duration: 440, easing: "cubic-bezier(.45,0,.9,.6)", fill: "forwards" });
+    await a1.finished;
+    photo.classList.add("show-back");
+    const a2 = photo.animate([{ transform: "rotateY(-90deg) scale(1.07)" }, { transform: "rotateY(0deg) scale(1)" }],
+      { duration: 560, easing: "cubic-bezier(.1,.45,.5,1)", fill: "forwards" });
+    await a2.finished;
+    a1.cancel(); a2.cancel();
+    photo.style.transition = "";
+  }
+
   async function open() {
     if (opening) return;
     opening = true;
     hint.style.opacity = "0";
     photo.style.transform = "";
-    if (reduced) return reveal();
-    makeDust();
     SFX.ensure();
+    if (reduced) { photo.classList.add("show-back"); return reveal(); }
+    SFX.flip(0);
+    await flipOver();                      // front with the name turns over to the sealed back
+    await wait(450);
+    makeDust();
     SFX.crack();
     photo.classList.add("crack");          // wax splits, gold dust
     await wait(520);
@@ -702,7 +729,7 @@
   function resetEnvelope() {
     invite.hidden = true;
     document.body.classList.remove("revealed");
-    photo.classList.remove("crack", "open", "behind", "out");
+    photo.classList.remove("crack", "open", "behind", "out", "show-back");
     gate.classList.remove("open");
     document.getElementById("zoom").style.transform = "";
     dust.innerHTML = "";
