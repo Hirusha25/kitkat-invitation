@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#16080a">
+<title>KitKat Invite Dashboard</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Jost:wght@300;400;500;600&display=swap">
+<style>
+  /* Layout: a quiet working dashboard in the invitation's burgundy and gold; summary tiles, then progress, then the guest list. */
+  :root {
+    --bg: #16080a; --panel: #22100f; --panel-2: #2b1513; --line: rgba(232,201,138,.14); --line-strong: rgba(232,201,138,.32);
+    --fg: #f3e9da; --muted: #b9a58c; --gold: #e2c27f; --gold-hi: #f6e3ab; --wine: #8c0f1e;
+    --ok: #7fc48d; --bad: #e07a73; --warn: #e3b55b; --track: rgba(243,233,218,.08);
+    --display: "Cinzel", "Trajan Pro", Georgia, serif; --body: "Jost", "Helvetica Neue", Arial, sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--body); font-weight: 400; -webkit-text-size-adjust: 100%; }
+  body { min-height: 100vh; background: radial-gradient(1200px 600px at 50% -10%, rgba(140,15,30,.35), transparent 70%), var(--bg); }
+  button, input, select { font: inherit; color: inherit; }
+  [hidden] { display: none !important; }
+  :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+  /* sign in */
+  .login { min-height: 100vh; display: grid; place-items: center; padding-block: 32px; padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
+  .login-card { width: min(100%, 400px); background: linear-gradient(180deg, var(--panel-2), var(--panel)); border: 1px solid var(--line-strong); border-radius: 16px; padding: 36px 28px 28px; text-align: center; box-shadow: 0 30px 70px rgba(0,0,0,.5); position: relative; }
+  .login-card::before { content: ""; position: absolute; inset: 8px; border: 1px solid var(--line); border-radius: 11px; pointer-events: none; }
+  .login-card img { width: 120px; height: auto; margin: 0 auto 14px; display: block; filter: drop-shadow(0 6px 14px rgba(0,0,0,.4)); }
+  .eyebrow { margin: 0; font-size: 11px; letter-spacing: .26em; text-transform: uppercase; color: var(--gold); }
+  .login h1 { margin: 6px 0 4px; font-family: var(--display); font-weight: 700; font-size: 22px; letter-spacing: .04em; color: var(--gold-hi); }
+  .login p.sub { margin: 0 0 22px; color: var(--muted); font-size: 14px; }
+  .field { display: grid; gap: 6px; text-align: left; margin-bottom: 12px; }
+  .field label { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .field input { width: 100%; background: rgba(0,0,0,.28); border: 1px solid var(--line-strong); border-radius: 10px; padding: 12px 14px; font-size: 16px; }
+  .field input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(226,194,127,.18); }
+  .remember { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); margin: 4px 0 18px; text-align: left; }
+  .remember input { accent-color: #c9a24f; width: 16px; height: 16px; }
+  .btn-gold { width: 100%; border: 0; border-radius: 99px; padding: 13px 18px; cursor: pointer; font-family: var(--display); font-weight: 700; letter-spacing: .22em; text-indent: .22em; font-size: 13px; color: #2a1206;
+    background: linear-gradient(100deg, #b8923f 0%, #f3dfa6 35%, #d4b062 60%, #f6e6b8 85%, #b8923f 100%); box-shadow: 0 6px 18px rgba(0,0,0,.35); }
+  .btn-gold[disabled] { opacity: .6; cursor: progress; }
+  .err { min-height: 1.3em; margin: 12px 0 0; font-size: 13px; color: var(--bad); }
+
+  /* dashboard */
+  .app { padding-block: 22px 48px; padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); max-width: 1180px; margin: 0 auto; display: grid; gap: 18px; }
+  .top { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 18px; justify-content: space-between; }
+  .brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
+  .brand img { width: 74px; height: auto; flex: none; }
+  .brand h1 { margin: 2px 0 0; font-family: var(--display); font-weight: 700; font-size: clamp(18px, 3.2vw, 24px); letter-spacing: .03em; color: var(--gold-hi); }
+  .brand .meta { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .updated { font-size: 12px; color: var(--muted); margin-right: 4px; font-variant-numeric: tabular-nums; }
+  .btn { border: 1px solid var(--line-strong); background: rgba(0,0,0,.2); border-radius: 99px; padding: 8px 14px; font-size: 13px; cursor: pointer; color: var(--fg); white-space: nowrap; }
+  .btn:hover { border-color: var(--gold); color: var(--gold-hi); }
+  .btn.spin::before { content: ""; display: inline-block; width: 10px; height: 10px; margin-right: 6px; border: 1.5px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin .8s linear infinite; vertical-align: -1px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .take { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.55; max-width: 72ch; }
+  .take b { color: var(--fg); font-weight: 500; font-variant-numeric: tabular-nums; }
+
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+  .kpi, .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; min-width: 0; }
+  .kpi h3 { margin: 0; font-size: 12px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .kpi .n { display: block; margin-top: 6px; font-family: var(--display); font-weight: 600; font-size: 34px; line-height: 1; font-variant-numeric: tabular-nums; color: var(--fg); }
+  .kpi .s { display: block; margin-top: 6px; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .kpi.ok .n { color: var(--ok); } .kpi.bad .n { color: var(--bad); } .kpi.gold .n { color: var(--gold-hi); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 18px; }
+  .card h2 { margin: 0 0 2px; font-family: var(--display); font-weight: 600; font-size: 15px; letter-spacing: .05em; color: var(--gold-hi); }
+  .card .note { margin: 0 0 14px; font-size: 12.5px; color: var(--muted); }
+  .bars { display: grid; gap: 12px; }
+  .bar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px 10px; align-items: baseline; font-size: 14px; }
+  .bar .v { font-variant-numeric: tabular-nums; } .bar .v small { color: var(--muted); margin-left: 6px; }
+  .track { grid-column: 1 / -1; height: 9px; border-radius: 99px; background: var(--track); overflow: hidden; }
+  .fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, #a8832f, var(--gold-hi)); transition: width .8s cubic-bezier(.22,1,.36,1); }
+  .fill.ok { background: var(--ok); }
+  .stack { display: flex; height: 16px; border-radius: 99px; overflow: hidden; background: var(--track); margin: 6px 0 14px; }
+  .stack span { height: 100%; transition: width .8s cubic-bezier(.22,1,.36,1); }
+  .legend { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .legend li { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: 10px; align-items: center; font-size: 14px; }
+  .legend i { width: 10px; height: 10px; border-radius: 50%; } .legend b { font-weight: 500; font-variant-numeric: tabular-nums; }
+  .c-ok { background: var(--ok); } .c-bad { background: var(--bad); } .c-wait { background: rgba(243,233,218,.22); }
+
+  .chart { position: relative; min-height: 180px; }
+  .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .chart text { fill: var(--muted); font-size: 11px; font-family: var(--body); }
+  .tip { position: absolute; top: 0; pointer-events: none; background: #2f1a17; border: 1px solid var(--line-strong); border-radius: 8px; padding: 6px 10px; font-size: 12px; white-space: nowrap; box-shadow: 0 8px 20px rgba(0,0,0,.4); }
+  .empty { color: var(--muted); font-size: 14px; padding: 12px 0; }
+
+  .tools { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .search { flex: 1 1 200px; min-width: 0; background: rgba(0,0,0,.25); border: 1px solid var(--line-strong); border-radius: 99px; padding: 8px 14px; font-size: 14px; }
+  .search:focus { outline: none; border-color: var(--gold); }
+  .select { background: rgba(0,0,0,.25); border: 1px solid var(--line-strong); border-radius: 99px; padding: 8px 12px; font-size: 14px; }
+  .tablewrap { overflow-x: auto; margin: 0 -18px; padding: 0 18px; -webkit-overflow-scrolling: touch; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 820px; }
+  th { text-align: left; font-size: 11px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding: 8px 12px 10px 0; border-bottom: 1px solid var(--line-strong); white-space: nowrap; }
+  th button { all: unset; cursor: pointer; } th button:hover { color: var(--gold-hi); } th .dir { color: var(--gold); }
+  td { padding: 11px 12px 11px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.mut { color: var(--muted); } td.msg { color: var(--muted); max-width: 30ch; }
+  .pill { display: inline-block; padding: 2px 10px; border-radius: 99px; font-size: 12px; font-weight: 500; white-space: nowrap; border: 1px solid currentColor; }
+  .p-ok { color: var(--ok); } .p-bad { color: var(--bad); } .p-warn { color: var(--warn); } .p-mut { color: var(--muted); border-color: var(--line-strong); }
+  .copy { border: 1px solid var(--line-strong); background: none; color: var(--gold); border-radius: 99px; padding: 3px 10px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+  .copy:hover { border-color: var(--gold); }
+  .feed { list-style: none; margin: 0; padding: 0; }
+  .feed li { display: grid; grid-template-columns: 8.2em minmax(0, 1fr); gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+  .feed li:last-child { border-bottom: 0; }
+  .feed time { color: var(--muted); font-size: 12px; padding-top: 2px; font-variant-numeric: tabular-nums; }
+  .feed b { font-weight: 500; }
+  .toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: #2f1a17; border: 1px solid var(--line-strong); border-radius: 99px; padding: 9px 16px; font-size: 13px; box-shadow: 0 10px 26px rgba(0,0,0,.5); z-index: 5; }
+  footer { color: var(--muted); font-size: 12px; text-align: center; padding-top: 8px; }
+  @media (prefers-reduced-motion: reduce) { .fill, .stack span { transition: none; } .btn.spin::before { animation: none; } }
+</style>
+</head>
+<body>
+
+<main class="login" id="login">
+  <form class="login-card" id="login-form" autocomplete="on" novalidate>
+    <img src="kitkat-logo.png" alt="Nestlé KitKat">
+    <p class="eyebrow">KitKat Invite</p>
+    <h1>Guest Dashboard</h1>
+    <p class="sub">Sign in to see who has opened the invitation and replied.</p>
+    <input type="text" name="username" autocomplete="username" value="kitkat-invite" hidden>
+    <div class="field">
+      <label for="pw">Password</label>
+      <input id="pw" name="password" type="password" autocomplete="current-password" required>
+    </div>
+    <label class="remember"><input type="checkbox" id="remember"> Keep me signed in on this device</label>
+    <button class="btn-gold" id="signin" type="submit">Sign in</button>
+    <p class="err" id="login-err" role="alert"></p>
+  </form>
+</main>
+
+<div class="app" id="app" hidden>
+  <header class="top">
+    <div class="brand">
+      <img src="kitkat-logo.png" alt="Nestlé KitKat">
+      <div>
+        <p class="eyebrow">Guest dashboard</p>
+        <h1>A New Chapter</h1>
+        <p class="meta">Monday, 7th December · 4:30 PM · The Atrium, Cinnamon Grand Colombo</p>
+      </div>
+    </div>
+    <div class="actions">
+      <span class="updated" id="updated"></span>
+      <button class="btn" id="refresh" type="button">Refresh</button>
+      <button class="btn" id="signout" type="button">Sign out</button>
+    </div>
+  </header>
+
+  <p class="take" id="take"></p>
+
+  <section class="kpis" aria-label="Totals">
+    <div class="kpi gold"><h3>Guests</h3><span class="n" id="k-guests">—</span><span class="s">on the list or opened a link</span></div>
+    <div class="kpi"><h3>Opened</h3><span class="n" id="k-opened">—</span><span class="s" id="k-opened-s">—</span></div>
+    <div class="kpi"><h3>Saw the invitation</h3><span class="n" id="k-viewed">—</span><span class="s">opened it all the way</span></div>
+    <div class="kpi"><h3>Replied</h3><span class="n" id="k-replied">—</span><span class="s" id="k-replied-s">—</span></div>
+    <div class="kpi ok"><h3>Attending</h3><span class="n" id="k-attending">—</span><span class="s">accepted with pleasure</span></div>
+    <div class="kpi bad"><h3>Declined</h3><span class="n" id="k-declined">—</span><span class="s">declined with regret</span></div>
+  </section>
+
+  <div class="grid">
+    <section class="card">
+      <h2>How far guests have got</h2>
+      <p class="note">Each guest counts once, at every step they have reached.</p>
+      <div class="bars" id="funnel"></div>
+    </section>
+    <section class="card">
+      <h2>Replies</h2>
+      <p class="note">Each guest's latest answer.</p>
+      <div class="stack" id="stack" role="img" aria-label="Attending, declined and awaiting a reply"></div>
+      <ul class="legend">
+        <li><i class="c-ok"></i><span>Attending</span><b id="l-attending">—</b></li>
+        <li><i class="c-bad"></i><span>Declined</span><b id="l-declined">—</b></li>
+        <li><i class="c-wait"></i><span>Awaiting a reply</span><b id="l-awaiting">—</b></li>
+      </ul>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>Invitations opened each day</h2>
+    <p class="note">Visits that opened a link, with replies marked in green. Colombo time, up to the last 30 days.</p>
+    <div class="chart" id="daily"></div>
+  </section>
+
+  <section class="card">
+    <h2>Guests</h2>
+    <p class="note">Replies first, then by how far each guest has got. Copy a guest's personal link to send it again.</p>
+    <div class="tools">
+      <input class="search" id="search" type="search" placeholder="Find a guest" aria-label="Find a guest">
+      <select class="select" id="filter" aria-label="Show guests">
+        <option value="">Everyone</option>
+        <option value="Attending">Attending</option>
+        <option value="Declined">Declined</option>
+        <option value="awaiting">Awaiting a reply</option>
+        <option value="Not opened">Not opened yet</option>
+      </select>
+      <button class="btn" id="export-all" type="button">Export guest list</button>
+      <button class="btn" id="export-att" type="button">Export attending</button>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr>
+          <th><button type="button" data-sort="guest">Guest</button></th>
+          <th><button type="button" data-sort="rank">Status</button></th>
+          <th><button type="button" data-sort="lastSeen">Last seen</button></th>
+          <th class="num"><button type="button" data-sort="visits">Visits</button></th>
+          <th>Device</th><th>Mobile</th><th>Email</th><th>Message</th><th>Link</th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="grid">
+    <section class="card">
+      <h2>Latest activity</h2>
+      <ol class="feed" id="feed"></ol>
+    </section>
+    <section class="card">
+      <h2>Devices</h2>
+      <p class="note">Visits that opened a link, by device.</p>
+      <div class="bars" id="devices"></div>
+    </section>
+  </div>
+
+  <footer>Updates every minute while this page is open. Times are Colombo time.</footer>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+  // ---- settings ----
+  const ENDPOINT = "";                                        // the same web app address the invitation uses
+  const INVITE = "https://hirusha25.github.io/kitkat-invitation/";   // guest links are built from this
+  const STORE = "kk-dash-pass";
+
+  const $ = (id) => document.getElementById(id);
+  const fmt = (n) => Number(n || 0).toLocaleString("en-US");
+  let PASS = "", DATA = null, timer = null, sort = { key: "rank", dir: 1 };
+
+  function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => (t.hidden = true), 2400); }
+  function getSaved() { try { return sessionStorage.getItem(STORE) || localStorage.getItem(STORE) || ""; } catch (e) { return ""; } }
+  function save(p, keep) { try { sessionStorage.setItem(STORE, p); if (keep) localStorage.setItem(STORE, p); else localStorage.removeItem(STORE); } catch (e) {} }
+  function forget() { try { sessionStorage.removeItem(STORE); localStorage.removeItem(STORE); } catch (e) {} }
+
+  async function fetchData(password) {
+    if (!ENDPOINT) throw new Error("setup");
+    const r = await fetch(ENDPOINT, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ type: "dashboard", password }) });
+    if (!r.ok) throw new Error("network");
+    return r.json();
+  }
+  const MESSAGES = {
+    wrong: "That password isn't right. Check it and try again.",
+    locked: "Too many wrong attempts. Sign-in is paused for 15 minutes.",
+    "not-set": "The dashboard password hasn't been set up yet.",
+    setup: "The dashboard isn't connected yet. Ask Martech to finish setup.",
+    network: "Couldn't reach the server. Check your connection and try again."
+  };
+
+  $("login-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const p = $("pw").value; if (!p) { $("login-err").textContent = "Enter the password."; $("pw").focus(); return; }
+    $("signin").disabled = true; $("signin").textContent = "Signing in…"; $("login-err").textContent = "";
+    try {
+      const d = await fetchData(p);
+      if (!d.ok) { $("login-err").textContent = MESSAGES[d.error] || MESSAGES.network; return; }
+      PASS = p; save(p, $("remember").checked); show(d);
+    } catch (err) { $("login-err").textContent = MESSAGES[err.message] || MESSAGES.network; }
+    finally { $("signin").disabled = false; $("signin").textContent = "Sign in"; }
+  });
+
+  function show(d) {
+    $("login").hidden = true; $("app").hidden = false; render(d);
+    clearInterval(timer); timer = setInterval(() => refresh(true), 60000);
+  }
+  async function refresh(quiet) {
+    const b = $("refresh"); b.classList.add("spin");
+    try {
+      const d = await fetchData(PASS);
+      if (!d.ok) { if (d.error === "wrong" || d.error === "locked") return signOut(MESSAGES[d.error]); throw new Error("network"); }
+      render(d); if (!quiet) toast("Up to date");
+    } catch (e) { if (!quiet) toast("Couldn't refresh. Check your connection."); }
+    finally { b.classList.remove("spin"); }
+  }
+  function signOut(msg) {
+    clearInterval(timer); PASS = ""; DATA = null; forget();
+    $("app").hidden = true; $("login").hidden = false; $("pw").value = ""; $("login-err").textContent = msg || ""; $("pw").focus();
+  }
+  $("refresh").addEventListener("click", () => refresh(false));
+  $("signout").addEventListener("click", () => signOut());
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && PASS) refresh(true); });
+
+  // ---- working out the numbers ----
+  function toRows(d) { const c = d.columns || []; return (d.rows || []).map((r) => Object.fromEntries(c.map((k, i) => [k, r[i] == null ? "" : String(r[i])]))); }
+  function guestsFrom(activity) {
+    const by = new Map();
+    const get = (name) => { const k = String(name || "").trim(); if (!k) return null;
+      if (!by.has(k)) by.set(k, { guest: k, opened: false, envelope: false, viewed: false, response: "", mobile: "", email: "", message: "", lastSeen: "", visits: new Set(), device: "" });
+      return by.get(k); };
+    activity.slice().sort((a, b) => a.Time.localeCompare(b.Time)).forEach((r) => {
+      const x = get(r.Guest); if (!x || r.Event === "Invited") return;
+      if (r.Visit) x.visits.add(r.Visit); if (r.Device) x.device = r.Device; if (r.Time > x.lastSeen) x.lastSeen = r.Time;
+      if (r.Event === "Opened link") x.opened = true;
+      if (r.Event === "Opened envelope") x.envelope = true;
+      if (r.Event === "Viewed invitation") x.viewed = true;
+      if (r.Event === "RSVP") { x.response = r.Response; x.mobile = r.Mobile || x.mobile; x.email = r.Email || x.email; x.message = r.Message; }
+    });
+    const RANK = { "Attending": 0, "Declined": 1, "Viewed, no reply": 2, "Opened envelope": 3, "Opened link": 4, "Not opened": 5 };
+    return [...by.values()].map((x) => {
+      const replied = !!x.response, viewed = x.viewed || replied, envelope = x.envelope || viewed, opened = x.opened || envelope;
+      const status = x.response === "Attending" ? "Attending" : replied ? "Declined" : viewed ? "Viewed, no reply" : envelope ? "Opened envelope" : opened ? "Opened link" : "Not opened";
+      return { guest: x.guest, status, rank: RANK[status], opened, envelope, viewed, replied, response: x.response, lastSeen: x.lastSeen, visits: x.visits.size, device: x.device, mobile: x.mobile, email: x.email, message: x.message };
+    });
+  }
+  const when = (t) => { const m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/.exec(t || ""); if (!m) return ""; return `${+m[3]} ${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+m[2]-1]}, ${m[4]}:${m[5]}`; };
+  const dayLabel = (d) => { const [y, m, dd] = d.split("-"); return `${+dd} ${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+m-1]}`; };
+  const slug = (n) => n.trim().replace(/&/g, " and ").replace(/[^\p{L}\p{N}.]+/gu, "-").replace(/^-+|-+$/g, "");
+  const linkFor = (n) => INVITE + "#" + slug(n);
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+
+  function render(d) {
+    const activity = toRows(d); const guests = guestsFrom(activity);
+    DATA = { activity, guests };
+    const n = guests.length, c = (k) => guests.filter((g) => g[k]).length, pct = (v) => (n ? Math.round(v / n * 100) : 0);
+    const S = { guests: n, opened: c("opened"), viewed: c("viewed"), replied: c("replied"), attending: guests.filter((g) => g.response === "Attending").length };
+    S.declined = S.replied - S.attending; S.awaiting = n - S.replied;
+    $("updated").textContent = d.at ? "Updated " + when(d.at) : "";
+    $("k-guests").textContent = fmt(S.guests); $("k-opened").textContent = fmt(S.opened); $("k-opened-s").textContent = pct(S.opened) + "% of guests";
+    $("k-viewed").textContent = fmt(S.viewed); $("k-replied").textContent = fmt(S.replied); $("k-replied-s").textContent = pct(S.replied) + "% of guests";
+    $("k-attending").textContent = fmt(S.attending); $("k-declined").textContent = fmt(S.declined);
+    $("l-attending").textContent = fmt(S.attending); $("l-declined").textContent = fmt(S.declined); $("l-awaiting").textContent = fmt(S.awaiting);
+    const take = $("take"); take.replaceChildren();
+    if (!n) take.textContent = "No guest activity yet. Guests appear as soon as their links are made or opened.";
+    else { const b = (v) => el("b", null, fmt(v)); take.append(b(S.opened), " of ", b(n), " guests have opened their invitation, and ", b(S.replied), " have replied: ", b(S.attending), " attending and ", b(S.declined), " declined."); }
+
+    // funnel
+    const f = $("funnel"); f.replaceChildren();
+    if (!n) f.append(el("div", "empty", "No guests yet."));
+    else [["On the guest list", n], ["Opened their link", S.opened], ["Opened the envelope", c("envelope")], ["Saw the invitation", S.viewed], ["Replied", S.replied]].forEach(([lab, v], i, a) => {
+      const row = el("div", "bar"); const val = el("span", "v", fmt(v)); val.append(el("small", null, pct(v) + "%"));
+      const tr = el("div", "track"), fi = el("div", "fill" + (i === a.length - 1 ? " ok" : "")); fi.style.width = pct(v) + "%"; tr.append(fi);
+      row.append(el("span", null, lab), val, tr); f.append(row);
+    });
+    // replies
+    const st = $("stack"); st.replaceChildren();
+    if (n) [["attending", "var(--ok)"], ["declined", "var(--bad)"], ["awaiting", "rgba(243,233,218,.22)"]].forEach(([k, col]) => { if (!S[k]) return; const s = el("span"); s.style.width = (S[k] / n * 100) + "%"; s.style.background = col; st.append(s); });
+
+    drawDaily(activity); drawRows(); drawFeed(activity); drawDevices(activity);
+  }
+
+  function drawDaily(activity) {
+    const box = $("daily"); box.replaceChildren();
+    const days = new Map();
+    activity.forEach((r) => { const d = (r.Time || "").slice(0, 10); if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return;
+      if (!days.has(d)) days.set(d, { opens: new Set(), replies: 0 });
+      if (r.Event === "Opened link") days.get(d).opens.add(r.Visit || r.Guest + r.Time); if (r.Event === "RSVP") days.get(d).replies++; });
+    if (!days.size) { box.append(el("div", "empty", "No invitations opened yet.")); return; }
+    const keys = [...days.keys()].sort(), rows = [];
+    const last = Date.parse(keys[keys.length - 1] + "T00:00:00Z"), first = Math.max(Date.parse(keys[0] + "T00:00:00Z"), last - 29 * 864e5);
+    for (let t = first; t <= last; t += 864e5) { const day = new Date(t).toISOString().slice(0, 10), v = days.get(day); rows.push({ day, opens: v ? v.opens.size : 0, replies: v ? v.replies : 0 }); }
+    const W = Math.max(280, box.clientWidth), H = 180, m = { t: 10, r: 6, b: 24, l: 26 };
+    const top = Math.max(1, ...rows.map((r) => Math.max(r.opens, r.replies)));
+    const nice = top <= 4 ? top : Math.ceil(top / 5) * 5, step = (W - m.l - m.r) / rows.length, bw = Math.min(42, step * 0.66);
+    const y = (v) => H - m.b - (v / nice) * (H - m.t - m.b);
+    const NS = "http://www.w3.org/2000/svg", svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.setAttribute("role", "img"); svg.setAttribute("aria-label", "Invitations opened each day, with replies");
+    const add = (tag, attrs, text) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text != null) e.textContent = text; svg.append(e); return e; };
+    const ticks = nice <= 4 ? Array.from({ length: nice + 1 }, (_, i) => i) : [0, nice / 5 * 1, nice / 5 * 2, nice / 5 * 3, nice / 5 * 4, nice].filter((v, i) => i % 1 === 0).filter((v, i, a) => a.length <= 6 || i % 2 === 0);
+    ticks.forEach((v) => { add("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), stroke: "rgba(243,233,218,.07)" }); add("text", { x: m.l - 6, y: y(v) + 4, "text-anchor": "end" }, v); });
+    const every = Math.ceil(rows.length / Math.max(1, Math.floor((W - m.l) / 62)));
+    rows.forEach((r, i) => {
+      const cx = m.l + step * i + step / 2;
+      add("rect", { x: cx - bw / 2, y: y(r.opens), width: bw, height: Math.max(0, y(0) - y(r.opens)), rx: 3, fill: "url(#g)" });
+      if (r.replies) add("circle", { cx, cy: y(r.replies), r: 4.5, fill: "#7fc48d", stroke: "#22100f", "stroke-width": 2 });
+      if (i % every === 0 || i === rows.length - 1) add("text", { x: cx, y: H - 6, "text-anchor": "middle" }, dayLabel(r.day));
+    });
+    const defs = document.createElementNS(NS, "defs"); defs.innerHTML = '<linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6e3ab"/><stop offset="1" stop-color="#a8832f"/></linearGradient>'; svg.prepend(defs);
+    box.append(svg);
+    const tip = el("div", "tip"); tip.hidden = true; box.append(tip);
+    svg.addEventListener("pointermove", (e) => {
+      const rect = svg.getBoundingClientRect(), x = (e.clientX - rect.left) / rect.width * W, i = Math.floor((x - m.l) / step);
+      if (i < 0 || i >= rows.length) { tip.hidden = true; return; }
+      const r = rows[i]; tip.textContent = `${dayLabel(r.day)} · ${r.opens} opened · ${r.replies} ${r.replies === 1 ? "reply" : "replies"}`; tip.hidden = false;
+      const px = (m.l + step * i + step / 2) / W * rect.width; tip.style.left = Math.min(Math.max(0, px - tip.offsetWidth / 2), rect.width - tip.offsetWidth) + "px";
+    });
+    svg.addEventListener("pointerleave", () => (tip.hidden = true));
+  }
+
+  function visible() {
+    const q = $("search").value.trim().toLowerCase(), f = $("filter").value;
+    return DATA.guests.filter((g) => (!q || g.guest.toLowerCase().includes(q)) && (!f || (f === "awaiting" ? !g.replied : g.status === f)))
+      .sort((a, b) => { const k = sort.key, va = a[k], vb = b[k]; const r = typeof va === "number" ? va - vb : String(va).localeCompare(String(vb));
+        return (r || String(b.lastSeen).localeCompare(String(a.lastSeen)) || a.guest.localeCompare(b.guest)) * (r ? sort.dir : 1); });
+  }
+  function drawRows() {
+    const tb = $("rows"); tb.replaceChildren();
+    document.querySelectorAll("th button").forEach((b) => { b.querySelector(".dir")?.remove(); if (b.dataset.sort === sort.key) b.append(el("span", "dir", sort.dir > 0 ? " ↑" : " ↓")); });
+    const msg = (t) => { const tr = el("tr"), td = el("td", "mut", t); td.colSpan = 9; tr.append(td); tb.append(tr); };
+    if (!DATA || !DATA.guests.length) return msg("No guests yet. They appear here as soon as their links are made or opened.");
+    const rows = visible(); if (!rows.length) return msg("No guests match.");
+    const PILL = { "Attending": "p-ok", "Declined": "p-bad", "Viewed, no reply": "p-warn" };
+    rows.forEach((g) => {
+      const tr = el("tr");
+      tr.append(el("td", null, g.guest));
+      const st = el("td"); st.append(el("span", "pill " + (PILL[g.status] || "p-mut"), g.status)); tr.append(st);
+      tr.append(el("td", "mut", when(g.lastSeen) || "—"), el("td", "num", String(g.visits)), el("td", "mut", g.device || "—"),
+        el("td", null, g.mobile || "—"), el("td", null, g.email || "—"), el("td", "msg", g.message || "—"));
+      const lk = el("td"), btn = el("button", "copy", "Copy link"); btn.type = "button";
+      btn.addEventListener("click", async () => { const u = linkFor(g.guest); try { await navigator.clipboard.writeText(u); toast("Link for " + g.guest + " copied"); } catch (e) { prompt("Copy this link", u); } });
+      lk.append(btn); tr.append(lk); tb.append(tr);
+    });
+  }
+  $("search").addEventListener("input", drawRows);
+  $("filter").addEventListener("change", drawRows);
+  document.querySelectorAll("th button").forEach((b) => b.addEventListener("click", () => { const k = b.dataset.sort; sort = { key: k, dir: sort.key === k ? -sort.dir : (k === "lastSeen" || k === "visits" ? -1 : 1) }; drawRows(); }));
+
+  function drawFeed(activity) {
+    const ol = $("feed"); ol.replaceChildren();
+    const VERB = { "Opened link": "opened their link", "Opened envelope": "opened the envelope", "Viewed invitation": "saw the invitation", "Added to calendar": "added it to their calendar", "Opened directions": "opened directions" };
+    const rows = activity.filter((r) => r.Event !== "Invited").sort((a, b) => b.Time.localeCompare(a.Time)).slice(0, 12);
+    if (!rows.length) { ol.append(el("li", "empty", "Nothing yet.")); return; }
+    rows.forEach((r) => { const li = el("li"), p = el("span"); p.append(el("b", null, r.Guest), " " + (r.Event === "RSVP" ? (r.Response === "Attending" ? "replied: attending" : "replied: declined") : (VERB[r.Event] || r.Event)));
+      li.append(el("time", null, when(r.Time)), p); ol.append(li); });
+  }
+  function drawDevices(activity) {
+    const box = $("devices"); box.replaceChildren();
+    const m = new Map(); activity.forEach((r) => { if (r.Event !== "Opened link") return; const d = r.Device || "Other"; if (!m.has(d)) m.set(d, new Set()); m.get(d).add(r.Visit || r.Guest + r.Time); });
+    const rows = [...m].map(([device, s]) => ({ device, visits: s.size })).sort((a, b) => b.visits - a.visits);
+    if (!rows.length) { box.append(el("div", "empty", "No visits yet.")); return; }
+    const top = rows[0].visits;
+    rows.forEach((r) => { const row = el("div", "bar"), tr = el("div", "track"), fi = el("div", "fill"); fi.style.width = (r.visits / top * 100) + "%"; tr.append(fi); row.append(el("span", null, r.device), el("span", "v", fmt(r.visits)), tr); box.append(row); });
+  }
+
+  // ---- exports ----
+  function download(name, rows) {
+    const esc = (v) => /[",\n]/.test(v) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v);
+    const csv = "﻿" + rows.map((r) => r.map(esc).join(",")).join("\r\n");
+    const a = el("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" })); a.download = name; document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }
+  const HEAD = ["Guest", "Status", "Last seen", "Visits", "Device", "Mobile", "Email", "Message", "Personal link"];
+  const line = (g) => [g.guest, g.status, when(g.lastSeen), g.visits, g.device, g.mobile, g.email, g.message, linkFor(g.guest)];
+  $("export-all").addEventListener("click", () => { if (DATA) download("kitkat-invite-guests.csv", [HEAD, ...visible().map(line)]); });
+  $("export-att").addEventListener("click", () => { if (DATA) download("kitkat-invite-attending.csv", [HEAD, ...DATA.guests.filter((g) => g.response === "Attending").map(line)]); });
+
+  // ---- start: sign straight in if this device remembers the password ----
+  (async () => {
+    const p = getSaved(); if (!p) { $("pw").focus(); return; }
+    try { const d = await fetchData(p); if (d.ok) { PASS = p; show(d); } else { forget(); $("login-err").textContent = MESSAGES[d.error] || ""; } }
+    catch (e) { $("login-err").textContent = MESSAGES[e.message] || ""; }
+  })();
+</script>
+</body>
+</html>
