@@ -17,7 +17,7 @@
   :root {
     --bg: #16080a; --panel: #22100f; --panel-2: #2b1513; --line: rgba(232,201,138,.14); --line-strong: rgba(232,201,138,.32);
     --fg: #f3e9da; --muted: #b9a58c; --gold: #e2c27f; --gold-hi: #f6e3ab; --wine: #8c0f1e;
-    --ok: #7fc48d; --bad: #e07a73; --warn: #e3b55b; --track: rgba(243,233,218,.08);
+    --ok: #7fc48d; --bad: #e07a73; --warn: #e3b55b; --track: rgba(243,233,218,.08); --wait: rgba(243,233,218,.22);
     --display: "Cinzel", "Trajan Pro", Georgia, serif; --body: "Jost", "Helvetica Neue", Arial, sans-serif;
     color-scheme: dark;
   }
@@ -65,6 +65,13 @@
 
   .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
   .kpi, .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; min-width: 0; }
+  /* white boxes for readability: same palette, darkened for a light background */
+  .kpi, .card { --panel: #fff; --fg: #2a1512; --muted: #6b5850; --gold-hi: #8c0f1e; --gold: #8a6420; --line: rgba(60,20,15,.12); --line-strong: rgba(60,20,15,.26);
+    --ok: #2e8a47; --bad: #c0392b; --warn: #a86b00; --track: rgba(60,20,15,.08); --wait: rgba(60,20,15,.18);
+    color: var(--fg); color-scheme: light; border-color: rgba(255,255,255,.6); box-shadow: 0 10px 28px rgba(0,0,0,.35); }
+  .card .search, .card .select { background: #fff; }
+  .card .btn { background: #fff; }
+  .card .tip { background: #2f1a17; color: #f3e9da; border-color: rgba(232,201,138,.32); }
   .kpi h3 { margin: 0; font-size: 12px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
   .kpi .n { display: block; margin-top: 6px; font-family: var(--display); font-weight: 600; font-size: 34px; line-height: 1; font-variant-numeric: tabular-nums; color: var(--fg); }
   .kpi .s { display: block; margin-top: 6px; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -84,7 +91,7 @@
   .legend { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
   .legend li { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: 10px; align-items: center; font-size: 14px; }
   .legend i { width: 10px; height: 10px; border-radius: 50%; } .legend b { font-weight: 500; font-variant-numeric: tabular-nums; }
-  .c-ok { background: var(--ok); } .c-bad { background: var(--bad); } .c-wait { background: rgba(243,233,218,.22); }
+  .c-ok { background: var(--ok); } .c-bad { background: var(--bad); } .c-wait { background: var(--wait); }
 
   .chart { position: relative; min-height: 180px; }
   .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
@@ -361,7 +368,7 @@
     });
     // replies
     const st = $("stack"); st.replaceChildren();
-    if (n) [["attending", "var(--ok)"], ["declined", "var(--bad)"], ["awaiting", "rgba(243,233,218,.22)"]].forEach(([k, col]) => { if (!S[k]) return; const s = el("span"); s.style.width = (S[k] / n * 100) + "%"; s.style.background = col; st.append(s); });
+    if (n) [["attending", "var(--ok)"], ["declined", "var(--bad)"], ["awaiting", "var(--wait)"]].forEach(([k, col]) => { if (!S[k]) return; const s = el("span"); s.style.width = (S[k] / n * 100) + "%"; s.style.background = col; st.append(s); });
 
     drawDaily(activity); drawRows(); drawFeed(activity); drawDevices(activity);
   }
@@ -384,12 +391,12 @@
     svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.setAttribute("role", "img"); svg.setAttribute("aria-label", "Invitations opened each day, with replies");
     const add = (tag, attrs, text) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text != null) e.textContent = text; svg.append(e); return e; };
     const ticks = nice <= 4 ? Array.from({ length: nice + 1 }, (_, i) => i) : [0, nice / 5 * 1, nice / 5 * 2, nice / 5 * 3, nice / 5 * 4, nice].filter((v, i) => i % 1 === 0).filter((v, i, a) => a.length <= 6 || i % 2 === 0);
-    ticks.forEach((v) => { add("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), stroke: "rgba(243,233,218,.07)" }); add("text", { x: m.l - 6, y: y(v) + 4, "text-anchor": "end" }, v); });
+    ticks.forEach((v) => { add("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), stroke: "rgba(60,20,15,.09)" }); add("text", { x: m.l - 6, y: y(v) + 4, "text-anchor": "end" }, v); });
     const every = Math.ceil(rows.length / Math.max(1, Math.floor((W - m.l) / 62)));
     rows.forEach((r, i) => {
       const cx = m.l + step * i + step / 2;
       add("rect", { x: cx - bw / 2, y: y(r.opens), width: bw, height: Math.max(0, y(0) - y(r.opens)), rx: 3, fill: "url(#g)" });
-      if (r.replies) add("circle", { cx, cy: y(r.replies), r: 4.5, fill: "#7fc48d", stroke: "#22100f", "stroke-width": 2 });
+      if (r.replies) add("circle", { cx, cy: y(r.replies), r: 4.5, fill: "#2e8a47", stroke: "#fff", "stroke-width": 2 });
       if (i % every === 0 || i === rows.length - 1) add("text", { x: cx, y: H - 6, "text-anchor": "middle" }, dayLabel(r.day));
     });
     const defs = document.createElementNS(NS, "defs"); defs.innerHTML = '<linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6e3ab"/><stop offset="1" stop-color="#a8832f"/></linearGradient>'; svg.prepend(defs);
