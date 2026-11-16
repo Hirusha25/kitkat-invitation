@@ -1344,7 +1344,7 @@
     return {
       prepare() {                                         // start downloading as the seal breaks, so it is ready in time
         if (reduced || !v || v.querySelector("source")) return;
-        [["img/chocolate.mp4", "video/mp4"], ["img/chocolate.webm", "video/webm"]].forEach(([src, type]) => { const el = document.createElement("source"); el.src = src; el.type = type; v.append(el); });
+        [["img/chocolate-wave.mp4", "video/mp4"], ["img/chocolate-wave.webm", "video/webm"]].forEach(([src, type]) => { const el = document.createElement("source"); el.src = src; el.type = type; v.append(el); });
         v.preload = "auto"; v.load();
       },
       start() {
