@@ -126,7 +126,10 @@
     <p class="eyebrow">KitKat Invite</p>
     <h1>Guest Dashboard</h1>
     <p class="sub">Sign in to see who has opened the invitation and replied.</p>
-    <input type="text" name="username" autocomplete="username" value="kitkat-invite" hidden>
+    <div class="field">
+      <label for="em">Email</label>
+      <input id="em" name="email" type="email" autocomplete="username" inputmode="email" autocapitalize="off" spellcheck="false" required>
+    </div>
     <div class="field">
       <label for="pw">Password</label>
       <input id="pw" name="password" type="password" autocomplete="current-password" required>
@@ -236,9 +239,10 @@
 
 <script>
   // ---- settings ----
-  const ENDPOINT = "";                                        // the same web app address the invitation uses
+  const ENDPOINT = "/api/";                                   // the same API the invitation uses
   const INVITE = "https://kitkat-invite.martech.live/";   // guest links are built from this
-  const STORE = "kk-dash-pass";
+  const STORE = "kk-dash-token";                              // a sign-in token, never the password
+  try { localStorage.removeItem("kk-dash-pass"); sessionStorage.removeItem("kk-dash-pass"); } catch (e) {}
 
   const $ = (id) => document.getElementById(id);
   const fmt = (n) => Number(n || 0).toLocaleString("en-US");
@@ -249,28 +253,34 @@
   function save(p, keep) { try { sessionStorage.setItem(STORE, p); if (keep) localStorage.setItem(STORE, p); else localStorage.removeItem(STORE); } catch (e) {} }
   function forget() { try { sessionStorage.removeItem(STORE); localStorage.removeItem(STORE); } catch (e) {} }
 
-  async function fetchData(password) {
+  async function api(body) {
     if (!ENDPOINT) throw new Error("setup");
-    const r = await fetch(ENDPOINT, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ type: "dashboard", password }) });
-    if (!r.ok) throw new Error("network");
+    const r = await fetch(ENDPOINT, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(body) });
+    if (!r.ok && r.status !== 400) throw new Error("network");
     return r.json();
   }
+  const fetchData = (token) => api({ type: "dashboard", token });
   const MESSAGES = {
-    wrong: "That password isn't right. Check it and try again.",
+    wrong: "That email and password don't match. Check them and try again.",
     locked: "Too many wrong attempts. Sign-in is paused for 15 minutes.",
-    "not-set": "The dashboard password hasn't been set up yet.",
+    expired: "You've been signed out. Sign in again.",
     setup: "The dashboard isn't connected yet. Ask Martech to finish setup.",
     network: "Couldn't reach the server. Check your connection and try again."
   };
 
   $("login-form").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const p = $("pw").value; if (!p) { $("login-err").textContent = "Enter the password."; $("pw").focus(); return; }
+    const em = $("em").value.trim(), p = $("pw").value;
+    if (!em) { $("login-err").textContent = "Enter your email."; $("em").focus(); return; }
+    if (!p) { $("login-err").textContent = "Enter the password."; $("pw").focus(); return; }
     $("signin").disabled = true; $("signin").textContent = "Signing in…"; $("login-err").textContent = "";
     try {
-      const d = await fetchData(p);
+      const keep = $("remember").checked;
+      const s = await api({ type: "login", email: em, password: p, remember: keep });
+      if (!s.ok) { $("login-err").textContent = MESSAGES[s.error] || MESSAGES.network; return; }
+      const d = await fetchData(s.token);
       if (!d.ok) { $("login-err").textContent = MESSAGES[d.error] || MESSAGES.network; return; }
-      PASS = p; save(p, $("remember").checked); show(d);
+      PASS = s.token; save(s.token, keep); $("pw").value = ""; show(d);
     } catch (err) { $("login-err").textContent = MESSAGES[err.message] || MESSAGES.network; }
     finally { $("signin").disabled = false; $("signin").textContent = "Sign in"; }
   });
@@ -283,17 +293,17 @@
     const b = $("refresh"); b.classList.add("spin");
     try {
       const d = await fetchData(PASS);
-      if (!d.ok) { if (d.error === "wrong" || d.error === "locked") return signOut(MESSAGES[d.error]); throw new Error("network"); }
+      if (!d.ok) { if (d.error === "expired" || d.error === "wrong" || d.error === "locked") return signOut(MESSAGES[d.error]); throw new Error("network"); }
       render(d); if (!quiet) toast("Up to date");
     } catch (e) { if (!quiet) toast("Couldn't refresh. Check your connection."); }
     finally { b.classList.remove("spin"); }
   }
   function signOut(msg) {
     clearInterval(timer); PASS = ""; DATA = null; forget();
-    $("app").hidden = true; $("login").hidden = false; $("pw").value = ""; $("login-err").textContent = msg || ""; $("pw").focus();
+    $("app").hidden = true; $("login").hidden = false; $("pw").value = ""; $("login-err").textContent = msg || ""; ($("em").value ? $("pw") : $("em")).focus();
   }
   $("refresh").addEventListener("click", () => refresh(false));
-  $("signout").addEventListener("click", () => signOut());
+  $("signout").addEventListener("click", () => { const t = PASS; signOut(); if (t) api({ type: "logout", token: t }).catch(() => {}); });
   document.addEventListener("visibilitychange", () => { if (!document.hidden && PASS) refresh(true); });
 
   // ---- working out the numbers ----
@@ -450,10 +460,10 @@
   $("export-all").addEventListener("click", () => { if (DATA) download("kitkat-invite-guests.csv", [HEAD, ...visible().map(line)]); });
   $("export-att").addEventListener("click", () => { if (DATA) download("kitkat-invite-attending.csv", [HEAD, ...DATA.guests.filter((g) => g.response === "Attending").map(line)]); });
 
-  // ---- start: sign straight in if this device remembers the password ----
+  // ---- start: sign straight in if this device is still signed in ----
   (async () => {
-    const p = getSaved(); if (!p) { $("pw").focus(); return; }
-    try { const d = await fetchData(p); if (d.ok) { PASS = p; show(d); } else { forget(); $("login-err").textContent = MESSAGES[d.error] || ""; } }
+    const p = getSaved(); if (!p) { $("em").focus(); return; }
+    try { const d = await fetchData(p); if (d.ok) { PASS = p; show(d); } else { forget(); $("login-err").textContent = d.error === "expired" ? "" : (MESSAGES[d.error] || ""); $("em").focus(); } }
     catch (e) { $("login-err").textContent = MESSAGES[e.message] || ""; }
   })();
 </script>
