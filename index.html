@@ -13,7 +13,7 @@
 <link rel="icon" type="image/png" href="img/favicon.png">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 <meta property="og:type" content="website">
-<meta property="og:title" content="A New Chapter · You are invited">
+<meta property="og:title" content="A New Chapter · You are Invited">
 <meta property="og:description" content="Join with Nestlé Professional as we unveil something extraordinary for the very first time in Sri Lanka.">
 <meta property="og:url" content="https://hirusha25.github.io/kitkat-invitation/">
 <meta property="og:image" content="https://hirusha25.github.io/kitkat-invitation/img/og.jpg">
@@ -605,9 +605,9 @@
     <div class="fshade" id="shade-front"></div>
     <div class="turnlight" id="light-front"></div>
     <div class="gate" id="gate" aria-hidden="true">
-      <div class="door l"><div class="face f"><div class="frame"></div><div class="cover-text top">You are invited</div><img class="cover-logo" src="img/kitkat-logo.png" alt=""><div class="cover-text bottom">A New Chapter</div></div>
+      <div class="door l"><div class="face f"><div class="frame"></div><div class="cover-text top">You are Invited</div><img class="cover-logo" src="img/kitkat-logo.png" alt=""><div class="cover-text bottom">A New Chapter</div></div>
         <div class="face b"><div class="frame"></div><svg class="orn-wing" viewBox="0 0 100 60"><use href="#orn"/></svg><div class="wing-eyebrow">Especially for</div><div class="wing-script" id="wing-name"></div><div class="wing-rule"></div><div class="wing-small">We would be honoured by your presence as a new chapter begins</div></div></div>
-      <div class="door r"><div class="face f"><div class="frame"></div><div class="cover-text top">You are invited</div><img class="cover-logo" src="img/kitkat-logo.png" alt=""><div class="cover-text bottom">A New Chapter</div></div>
+      <div class="door r"><div class="face f"><div class="frame"></div><div class="cover-text top">You are Invited</div><img class="cover-logo" src="img/kitkat-logo.png" alt=""><div class="cover-text bottom">A New Chapter</div></div>
         <div class="face b"><div class="frame"></div><img class="wing-logo" src="img/kitkat-logo.png" alt=""><div class="wing-rule"></div><div class="wing-script">The Same Iconic Break</div><div class="wing-small">Monday, 7th December<br>4:30 PM onwards<br>The Atrium, Cinnamon Grand Colombo</div></div></div>
     </div>
     <div class="inside-shade" aria-hidden="true"></div>
@@ -793,7 +793,7 @@
     const isHost = !OPEN && fromLink.toLowerCase() === "host";
     const isSample = fromLink.toLowerCase() === "priya sharma";
     const n = OPEN ? "" : (!isHost && !isSample && fromLink) || EVENT.defaultGuest || "";
-    envName.textContent = n || "You are invited";
+    envName.textContent = n || "You are Invited";
     document.getElementById("wing-name").textContent = n || "Someone Special";
     dear.textContent = n ? `Dear ${n},` : "Dear Guest,";
     dear.hidden = !EVENT.nameOnCard;
@@ -854,7 +854,7 @@
         const name = (document.getElementById("env-name") || {}).textContent || "";
         navigator.mediaSession.metadata = new MediaMetadata({
           title: "A New Chapter",
-          artist: name ? "An invitation for " + name : "You are invited",
+          artist: name ? "An invitation for " + name : "You are Invited",
           album: "KitKat · Nestlé Professional",
           artwork: [
             { src: new URL("img/now-playing-512.png", document.baseURI).href, sizes: "512x512", type: "image/png" },
@@ -1263,7 +1263,7 @@
     function open() {
       lastFocus = document.activeElement;
       const r = saved();
-      nameIn.value = (r && r.name) || (envName.textContent !== "You are invited" ? envName.textContent : "");
+      nameIn.value = (r && r.name) || (envName.textContent !== "You are Invited" ? envName.textContent : "");
       err.textContent = "";
       if (r) showThanks(r); else { formView.hidden = false; thanks.hidden = true; }
       layer.hidden = false;
