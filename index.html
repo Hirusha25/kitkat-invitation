@@ -834,6 +834,29 @@
         keepAlive = new Audio(URL.createObjectURL(new Blob([buf], { type: "audio/wav" })));
         keepAlive.loop = true; keepAlive.setAttribute("playsinline", ""); keepAlive.setAttribute("x-webkit-airplay", "deny");
         keepAlive.play().catch(() => {});
+        nowPlaying();
+      } catch {}
+    }
+    // what the lock screen and control centre show while the invitation's sound is on
+    function nowPlaying() {
+      try {
+        if (!("mediaSession" in navigator) || typeof MediaMetadata === "undefined") return;
+        const name = (document.getElementById("env-name") || {}).textContent || "";
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: "A New Chapter",
+          artist: name ? "An invitation for " + name : "You are invited",
+          album: "KitKat · Nestlé Professional",
+          artwork: [
+            { src: new URL("img/now-playing-512.png", location.href).href, sizes: "512x512", type: "image/png" },
+            { src: new URL("img/now-playing-256.png", location.href).href, sizes: "256x256", type: "image/png" }
+          ]
+        });
+        navigator.mediaSession.playbackState = "playing";
+        // pausing from the lock screen mutes the invitation; play turns sound back on
+        const setMuted = (m) => { if (m !== muted) btn.click(); navigator.mediaSession.playbackState = m ? "paused" : "playing"; };
+        navigator.mediaSession.setActionHandler("pause", () => { setMuted(true); keepAlive && keepAlive.pause(); });
+        navigator.mediaSession.setActionHandler("play", () => { keepAlive && keepAlive.play().catch(() => {}); setMuted(false); });
+        ["seekbackward", "seekforward", "previoustrack", "nexttrack", "seekto"].forEach((a) => { try { navigator.mediaSession.setActionHandler(a, null); } catch {} });
       } catch {}
     }
     function ensure() {
