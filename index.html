@@ -86,20 +86,20 @@
   .table-plane { position: absolute; inset: 0; transform: rotateY(var(--tiltY, 0deg)) rotateX(calc(46deg + var(--tiltX, 0deg))); }
   .ground { position: absolute; inset: 0; transform: rotateZ(-5deg) translateZ(-.5px); }
   .contact { position: absolute; inset: -.5% -.4%; border-radius: 5px; background: rgba(8,2,0,.78); filter: blur(2px); transform: translate(.5%, 1.2%); transition: opacity .45s ease, filter .8s ease; }
-  .scene3d.lifted .contact { opacity: 0; filter: blur(12px); }
   .shadow3d {
     position: absolute; inset: -4% -3%; border-radius: 8%;
     background: radial-gradient(closest-side, rgba(0,0,0,.7), rgba(0,0,0,.42) 60%, rgba(0,0,0,0));
     filter: blur(11px); transform: translate3d(3%, 6%, 0);
     transition: transform 1.1s cubic-bezier(.3,.7,.2,1), opacity 1.1s, filter 1.1s;
   }
-  .scene3d.lifted .shadow3d { opacity: .5; filter: blur(24px); transform: translate3d(3%, 10%, -1px) scale(1.12); }
+  .scene3d.lifted .shadow3d { opacity: 1; filter: blur(14px); transform: translate3d(2%, 30%, 0) scale(.92, .78); }
+  .scene3d.lifted .contact { opacity: .55; filter: blur(18px); transform: translate(1%, 26%) scale(.9, .7); }
   .pose { position: absolute; inset: 0; transform: translateZ(calc(var(--T) / 2)) rotateZ(-5deg); transition: transform 1.3s cubic-bezier(.22,1,.36,1); }
   body.ready .pose { animation: drop 1.6s cubic-bezier(.2,.8,.2,1) .3s backwards; }
   @keyframes drop { from { transform: translate3d(0, -14%, 220px) rotateZ(-16deg) } }
   body.ready .scene3d { animation: sceneIn .9s ease .3s backwards; }
   @keyframes sceneIn { from { opacity: 0 } }
-  .scene3d.lifted .pose { transform: translate3d(0, -4%, calc(var(--W) * .2)) rotateX(-46deg) rotateZ(0deg); }
+  .scene3d.lifted .pose { transform: translate3d(0, -2%, calc(var(--W) * .34)) rotateX(-46deg) rotateZ(0deg) scale(.86); }
   .env3d { position: absolute; inset: 0; transition: transform 1.25s cubic-bezier(.65,0,.35,1); }
   .scene3d.flipped .env3d { transform: rotateY(180deg); }
 
@@ -199,6 +199,8 @@
     box-shadow: 0 0 0 1px rgba(0,0,0,.18), 0 2px 6px rgba(0,0,0,.35), inset 0 0 0 1px rgba(0,0,0,.12); }
   .cta::before { content: ""; position: absolute; inset: -1px; border-radius: 50%; border: 1px solid rgba(243,216,152,.6); animation: halo 3.2s ease-out 2.6s infinite; pointer-events: none; }
   .cta:hover, .cta:focus-visible { outline: none; color: #fff0c8; border-color: #fff0c8; }
+  body.ready .cta.away, body .cta.away { animation: none; opacity: 0; transform: scale(.92); pointer-events: none; transition: opacity .45s ease, transform .45s ease; }
+  body.ready .cta.away::before, body .cta.away::before { animation: none; opacity: 0; }
   @keyframes halo { 0% { opacity: .8; transform: scale(1) } 65%, 100% { opacity: 0; transform: scale(1.35) } }
   @keyframes breathe { 0%, 100% { opacity: 1 } 50% { opacity: .62 } }
   body.ready .cta { animation: ctaIn .9s cubic-bezier(.22,1,.36,1) 1.2s backwards, breathe 3.2s ease-in-out 2.4s infinite; }
@@ -282,6 +284,7 @@
   /* thin gilded paper edge, seen as the card turns */
   .cedge { position: absolute; backface-visibility: visible; -webkit-backface-visibility: visible; pointer-events: none;
     background: linear-gradient(var(--dir, 180deg), #a07a32 0%, #f2dca0 45%, #fff3d0 55%, #a07a32 100%); }
+  .card-wrap:not(.flying) .cedge { display: none; }
   .c-top, .c-bot { left: 16px; right: 16px; height: 3px; transform: rotateX(90deg); }
   .c-top { top: -1.5px; } .c-bot { top: calc(100% - 1.5px); }
   .c-l, .c-r { top: 16px; bottom: 16px; width: 3px; transform: rotateY(90deg); --dir: 90deg; }
@@ -307,7 +310,7 @@
     --cg: #e8c98a;
   }
   .content { position: absolute; inset: 0; padding: 16.5cqw 5cqw 0; display: flex; flex-direction: column; align-items: center; }
-  .content > * { animation: up .9s cubic-bezier(.2,.7,.2,1) both; }
+  .content > * { animation: none; }
   .content > :nth-child(1) { animation-delay: calc(var(--t0) + 0s) }
   .content > :nth-child(2) { animation-delay: calc(var(--t0) + .18s) }
   .content > :nth-child(3) { animation-delay: calc(var(--t0) + .36s) }
@@ -363,7 +366,7 @@
   .dress .sep { width: 1px; height: 4cqw; background: var(--cg); }
   @keyframes sway { 0%, 100% { transform: rotate(-7deg) } 50% { transform: rotate(7deg) } }
 
-  .logo { display: block; width: 36cqw; margin-top: 3cqw; filter: drop-shadow(0 8px 14px rgba(0,0,0,.35)); animation: up .9s cubic-bezier(.2,.7,.2,1) both, float 6s ease-in-out calc(var(--t0) + 2.2s) infinite; }
+  .logo { display: block; width: 36cqw; margin-top: 3cqw; filter: drop-shadow(0 8px 14px rgba(0,0,0,.35)); animation: float 6s ease-in-out calc(var(--t0) + 2.2s) infinite; }
   @keyframes float { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-1.2cqw) } }
 
   .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 28px; }
@@ -405,7 +408,7 @@
     font-family: var(--display); font-weight: 700; font-size: 3.6cqw; letter-spacing: .28em; text-indent: .28em; color: #3a1a06;
     background: linear-gradient(100deg, #b8923f 0%, #f3dfa6 35%, #d4b062 60%, #f6e6b8 85%, #b8923f 100%); background-size: 220% 100%;
     box-shadow: 0 4px 14px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.6);
-    animation: up .9s cubic-bezier(.2,.7,.2,1) both, shimmer 5s linear calc(var(--t0) + 2s) infinite;
+    animation: shimmer 5s linear calc(var(--t0) + 2s) infinite;
     position: relative;
   }
   .rsvp-btn::after { content: ""; position: absolute; inset: -4px; border-radius: inherit; border: 1px solid rgba(240,207,138,.6); animation: ring 2.6s ease-out calc(var(--t0) + 2.4s) infinite; pointer-events: none; }
@@ -917,7 +920,7 @@
   async function open() {
     if (opening) return;
     opening = true;
-    hint.style.opacity = "0"; hint.style.pointerEvents = "none";
+    hint.classList.add("away");
     SFX.ensure();
     askMotion();
     if (reduced) return reveal();
@@ -1024,7 +1027,7 @@
     dust.innerHTML = "";
     stage.classList.remove("gone");
     stage.hidden = false;
-    hint.style.opacity = ""; hint.style.pointerEvents = "";
+    hint.classList.remove("away");
     applyName();
     const pose = box.querySelector(".pose");
     pose.style.animation = "none"; void pose.offsetWidth; pose.style.animation = "";   // drop it onto the table again
