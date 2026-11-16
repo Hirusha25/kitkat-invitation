@@ -352,7 +352,7 @@
   .card-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; z-index: 0; opacity: 0; pointer-events: none; }
   .card-video.on { opacity: 1; }
   .content { z-index: 1; }
-  .content { position: absolute; inset: 0; padding: 16.5cqw 5cqw 0; display: flex; flex-direction: column; align-items: center; }
+  .content { position: absolute; inset: 0; padding: 15cqw 5cqw 0; display: flex; flex-direction: column; align-items: center; }
   .content > * { animation: none; }
   .content > :nth-child(1) { animation-delay: calc(var(--t0) + 0s) }
   .content > :nth-child(2) { animation-delay: calc(var(--t0) + .18s) }
@@ -389,11 +389,11 @@
   @keyframes twinkle { 0%, 100% { opacity: 0; transform: scale(.3) rotate(0deg) } 50% { opacity: 1; transform: scale(1) rotate(45deg) } }
 
   .subtitle { font-family: "Beau Rivage", "Brush Script MT", cursive; font-size: 11cqw; line-height: 1; margin: .5cqw 0 0; color: #fff; text-shadow: 0 2px 6px rgba(0,0,0,.35); white-space: nowrap; }
-  .copy { font-size: 3.3cqw; line-height: 1.55; margin: 6cqw 0 0; max-width: 90cqw; font-weight: 400; text-wrap: balance; }
+  .copy { font-size: 3.3cqw; line-height: 1.55; margin: 3.2cqw 0 0; max-width: 90cqw; font-weight: 400; text-wrap: balance; }
   #intro { max-width: 84cqw; }
-  .copy.gold { color: #f0cf8a; font-size: 3.1cqw; margin-top: 4cqw; max-width: 96cqw; }
+  .copy.gold { color: #f0cf8a; font-size: 3.1cqw; margin-top: 3cqw; max-width: 96cqw; }
 
-  .details { display: flex; justify-content: center; align-items: stretch; margin-top: 8cqw; width: 100%; padding: 0 1cqw; }
+  .details { display: flex; justify-content: center; align-items: stretch; margin-top: 6cqw; width: 100%; padding: 0 1cqw; }
   .detail { display: flex; gap: 1.6cqw; text-align: left; padding: 0 3cqw 0 2.4cqw; min-width: 0; align-items: flex-start; }
   .detail:nth-child(1) { width: 31%; } .detail:nth-child(2) { width: 29%; } .detail:nth-child(3) { width: 40%; }
   .detail > div { min-width: 0; }
@@ -408,12 +408,12 @@
   @keyframes tick { to { transform: rotate(360deg) } }
   @keyframes hop { 0%, 100% { transform: translateY(0) } 40% { transform: translateY(-.9cqw) } 60% { transform: translateY(-.9cqw) } }
 
-  .dress { display: inline-flex; align-items: center; gap: 2.4cqw; margin-top: 7cqw; padding: 1.6cqw 4.5cqw; border: 1px solid var(--cg); border-radius: 99px; font-size: 3.4cqw; max-width: 100%; white-space: nowrap; }
+  .dress { display: inline-flex; align-items: center; gap: 2.4cqw; margin-top: 5.5cqw; padding: 1.6cqw 4.5cqw; border: 1px solid var(--cg); border-radius: 99px; font-size: 3.4cqw; max-width: 100%; white-space: nowrap; }
   .dress svg { width: 5.2cqw; height: 5.2cqw; stroke: var(--cg); fill: none; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; flex: none; transform-origin: 50% 15%; animation: sway 3.6s ease-in-out infinite; }
   .dress .sep { width: 1px; height: 4cqw; background: var(--cg); }
   @keyframes sway { 0%, 100% { transform: rotate(-7deg) } 50% { transform: rotate(7deg) } }
 
-  .logo { display: block; width: 36cqw; margin-top: 5.4cqw; filter: drop-shadow(0 8px 14px rgba(0,0,0,.35)); animation: float 6s ease-in-out calc(var(--t0) + 2.2s) infinite; }
+  .logo { display: block; width: 36cqw; margin-top: 4cqw; filter: drop-shadow(0 8px 14px rgba(0,0,0,.35)); animation: float 6s ease-in-out calc(var(--t0) + 2.2s) infinite; }
   @keyframes float { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-1.2cqw) } }
 
   .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 28px; }
@@ -621,7 +621,7 @@
     <div class="inside-shade" aria-hidden="true"></div>
     <div class="sheen" aria-hidden="true"></div>
     <article class="card" id="card">
-      <video class="card-video" id="card-video" muted playsinline loop preload="none" poster="img/card-still.webp" aria-hidden="true" disablepictureinpicture disableremoteplayback hidden></video>
+      <video class="card-video" id="card-video" muted playsinline preload="none" poster="img/card-still.webp" aria-hidden="true" disablepictureinpicture disableremoteplayback hidden></video>
       <div class="content">
         <div class="title-wrap">
           <svg class="spark s1" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg><svg class="spark s2" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg><svg class="spark s3" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg><svg class="spark s4" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg>
@@ -1091,7 +1091,7 @@
     hint.classList.add("away");
     TRACK.send("envelope");
     SFX.ensure();
-    if (reduced) { SFX.wafer(); return reveal(); }
+    if (reduced) return reveal();
     SFX.slide(0);
     box.classList.add("lifted");           // the envelope is picked up off the table
     await wait(520);                       // and starts turning while it is still rising
@@ -1102,7 +1102,7 @@
     await wait(500);
     makeDust();
     CHOC.prepare();
-    SFX.wafer(); SFX.sealSparkle(.05); buzz([12, 40, 20]);
+    SFX.crack(); SFX.sealSparkle(.05); buzz([12, 40, 20]);
     box.classList.add("crack");            // seal breaks, gold dust
     await wait(520);
     SFX.flap();
@@ -1177,6 +1177,7 @@
     setTimeout(() => {                                   // after the flip: doors open, camera pulls back to show the full spread
       if (invite.hidden) return;
       gate.classList.add("open");
+      SFX.wafer();                                       // the two halves part like a KitKat snapped in two
       TRACK.send("card");
       CHOC.start();
       setTimeout(() => { if (!invite.hidden) invite.classList.add("live"); }, reduced ? 0 : 2500);
@@ -1284,10 +1285,21 @@
     return { enable, disable };
   })();
 
-  // ---- the chocolate splash, as a looping video ----
+  // ---- the chocolate splash: played once, then held on the finished wave ----
   const CHOC = (() => {
     const v = document.getElementById("card-video");
-    let wanted = false, t0 = 0, raf = 0, showTimer = 0;
+    let wanted = false, t0 = 0, raf = 0, showTimer = 0, held = false, watch = 0;
+    const END = 4.9;                                     // after this the file starts blending into a second wave (it was made to loop)
+    function hold() {                                    // stop on the finished curl and keep it on screen
+      cancelAnimationFrame(watch);
+      const tick = () => {
+        if (!wanted || held) return;
+        if (v.currentTime >= END || v.ended) { held = true; v.pause(); return; }   // pause where it is: no seek, so nothing can jump
+        next();
+      };
+      const next = () => { if ("requestVideoFrameCallback" in v) v.requestVideoFrameCallback(tick); else watch = requestAnimationFrame(tick); };
+      next();
+    }
     const SHOW_AFTER = 900;                               // the panels are well under way by now
     function ease() {                                     // start almost still and speed up to normal pace
       cancelAnimationFrame(raf);
@@ -1307,10 +1319,10 @@
         if (!wanted) return;
         try { v.playbackRate = 0.12; } catch {}
         v.muted = true;
-        v.play().then(() => { v.classList.add("on"); ease(); }).catch(() => {});   // phones that block video (e.g. Low Power Mode) keep the still picture
+        v.play().then(() => { v.classList.add("on"); ease(); hold(); }).catch(() => {});   // phones that block video (e.g. Low Power Mode) keep the still picture
       }, Math.max(0, SHOW_AFTER - (performance.now() - t0)));
     }
-    document.addEventListener("visibilitychange", () => { if (!wanted) return; if (document.hidden) v.pause(); else v.play().catch(() => {}); });
+    document.addEventListener("visibilitychange", () => { if (!wanted || held) return; if (document.hidden) v.pause(); else if (v.classList.contains("on")) v.play().then(hold).catch(() => {}); });
     return {
       prepare() {                                         // start downloading as the seal breaks, so it is ready in time
         if (reduced || !v || v.querySelector("source")) return;
@@ -1320,7 +1332,7 @@
       start() {
         if (reduced || !v) return;
         this.prepare();
-        wanted = true; t0 = performance.now(); v.hidden = false;
+        wanted = true; held = false; t0 = performance.now(); v.hidden = false;
         try { v.currentTime = 0; } catch {}
         if (v.readyState >= 4) return go();
         const ready = () => { v.removeEventListener("canplaythrough", ready); go(); };
