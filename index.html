@@ -717,7 +717,7 @@
     calendarZone:  "Asia/Colombo",
     mapQuery: "The Atrium, Cinnamon Grand Colombo",
     rsvpUrl: "",
-    rsvpEndpoint: "",     // Google Apps Script web app URL that writes replies to the RSVP sheet
+    rsvpEndpoint: "",     // Google Apps Script web app URL that records guest activity and replies
     rsvpBy: "",           // e.g. "30th November" shows "Kindly reply by 30th November"
     cardBackImage: ""     // e.g. "img/card-back.png": photographed card back
   };
@@ -737,6 +737,32 @@
       (EVENT.rsvpUrl ? `<a href="${EVENT.rsvpUrl}" target="_blank" rel="noopener">RSVP</a>` : "")
     + `<a href="${IOS ? "event.ics" : calUrl}" ${IOS ? "" : 'target="_blank" rel="noopener"'}>Add to calendar</a>`
     + `<a href="${mapUrl}" target="_blank" rel="noopener">Directions</a>`;
+
+  // ---- guest activity: each moment is sent once per visit to the activity sheet ----
+  const TRACK = (() => {
+    const visit = Math.random().toString(36).slice(2, 10);
+    const ua = navigator.userAgent;
+    const device = /iPad/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1) ? "iPad"
+      : /iPhone|iPod/.test(ua) ? "iPhone" : /Android/.test(ua) ? "Android" : /Macintosh/.test(ua) ? "Mac" : /Windows/.test(ua) ? "Windows" : "Other";
+    const sent = new Set();
+    function post(payload) {
+      if (!EVENT.rsvpEndpoint) return Promise.resolve();
+      return fetch(EVENT.rsvpEndpoint, { method: "POST", mode: "no-cors", keepalive: true, headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
+    }
+    function send(type, extra, repeatable) {
+      if (/^#host$/i.test(location.hash)) return Promise.resolve();
+      if (!repeatable && sent.has(type)) return Promise.resolve();
+      sent.add(type);
+      const guest = (document.getElementById("env-name") || {}).textContent || "";
+      return post(Object.assign({ type, guest, device, visit }, extra || {})).catch(() => {});
+    }
+    return { send, post, device, visit };
+  })();
+  document.getElementById("actions").addEventListener("click", e => {
+    const a = e.target.closest("a"); if (!a) return;
+    if (/calendar/i.test(a.textContent)) TRACK.send("calendar", null, true);
+    else if (/directions/i.test(a.textContent)) TRACK.send("directions", null, true);
+  });
 
   // ---- Guest name from the link ----
   function guestName() {
@@ -763,6 +789,7 @@
     host.hidden = !isHost;
   }
   applyName();
+  TRACK.send("open");
   window.addEventListener("hashchange", applyName);
 
   // Shrink single-line text until it fits inside the card, whatever font is rendering
@@ -957,6 +984,7 @@
     if (opening) return;
     opening = true;
     hint.classList.add("away");
+    TRACK.send("envelope");
     SFX.ensure();
     askMotion();
     if (reduced) return reveal();
@@ -1044,6 +1072,7 @@
     setTimeout(() => {                                   // after the flip: doors open, camera pulls back to show the full spread
       if (invite.hidden) return;
       gate.classList.add("open");
+      TRACK.send("card");
       setTimeout(() => { if (!invite.hidden) invite.classList.add("live"); }, reduced ? 0 : 2500);
       const k = Math.min(1, (window.innerWidth - 24) / (2 * zoom.offsetWidth));
       zoom.style.transform = `scale(${k})`;
@@ -1225,7 +1254,7 @@
       err.textContent = ""; send.disabled = true; send.textContent = "Sending\u2026";
       try {
         if (EVENT.rsvpEndpoint) {
-          await fetch(EVENT.rsvpEndpoint, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(data) });
+          await TRACK.post(Object.assign({ type: "rsvp", guest: data.invitedAs || data.name, device: TRACK.device, visit: TRACK.visit }, data));
         }
         try { localStorage.setItem(key(), JSON.stringify(data)); } catch {}
         showThanks(data); paintButton(); SFX.sent(); buzz([10, 60, 14]);
@@ -1274,6 +1303,7 @@
     }
     copyAll.hidden = false;
     if (!base) say("No page link given, so these are just the endings. Add each to your page link.");
+    else if (EVENT.rsvpEndpoint) TRACK.post({ type: "invited", guests: names, device: TRACK.device, visit: TRACK.visit }).then(() => say(`${names.length} added to the guest tracker`), () => {});
   });
   copyAll.addEventListener("click", () => copyText(built.map(g => `${g.name}: ${g.link}`).join("\n"), "All links copied"));
 </script>
