@@ -623,7 +623,7 @@
     <div class="inside-shade" aria-hidden="true"></div>
     <div class="sheen" aria-hidden="true"></div>
     <article class="card" id="card">
-      <video class="card-video" id="card-video" muted playsinline preload="none" poster="img/card-still.webp" aria-hidden="true" disablepictureinpicture disableremoteplayback hidden></video>
+      <video class="card-video" id="card-video" muted playsinline loop preload="none" poster="img/card-still.webp" aria-hidden="true" disablepictureinpicture disableremoteplayback hidden></video>
       <div class="content">
         <div class="title-wrap">
           <svg class="spark s1" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg><svg class="spark s2" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg><svg class="spark s3" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg><svg class="spark s4" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg>
@@ -1287,21 +1287,10 @@
     return { enable, disable };
   })();
 
-  // ---- the chocolate splash: played once, then held on the finished wave ----
+  // ---- the chocolate splash, as a looping video (eases in from a slow start) ----
   const CHOC = (() => {
     const v = document.getElementById("card-video");
-    let wanted = false, t0 = 0, raf = 0, showTimer = 0, held = false, watch = 0;
-    const END = 4.9;                                     // after this the file starts blending into a second wave (it was made to loop)
-    function hold() {                                    // stop on the finished curl and keep it on screen
-      cancelAnimationFrame(watch);
-      const tick = () => {
-        if (!wanted || held) return;
-        if (v.currentTime >= END || v.ended) { held = true; v.pause(); return; }   // pause where it is: no seek, so nothing can jump
-        next();
-      };
-      const next = () => { if ("requestVideoFrameCallback" in v) v.requestVideoFrameCallback(tick); else watch = requestAnimationFrame(tick); };
-      next();
-    }
+    let wanted = false, t0 = 0, raf = 0, showTimer = 0;
     const SHOW_AFTER = 900;                               // the panels are well under way by now
     function ease() {                                     // start almost still and speed up to normal pace
       cancelAnimationFrame(raf);
@@ -1321,10 +1310,10 @@
         if (!wanted) return;
         try { v.playbackRate = 0.12; } catch {}
         v.muted = true;
-        v.play().then(() => { v.classList.add("on"); ease(); hold(); }).catch(() => {});   // phones that block video (e.g. Low Power Mode) keep the still picture
+        v.play().then(() => { v.classList.add("on"); ease(); }).catch(() => {});   // phones that block video (e.g. Low Power Mode) keep the still picture
       }, Math.max(0, SHOW_AFTER - (performance.now() - t0)));
     }
-    document.addEventListener("visibilitychange", () => { if (!wanted || held) return; if (document.hidden) v.pause(); else if (v.classList.contains("on")) v.play().then(hold).catch(() => {}); });
+    document.addEventListener("visibilitychange", () => { if (!wanted) return; if (document.hidden) v.pause(); else v.play().catch(() => {}); });
     return {
       prepare() {                                         // start downloading as the seal breaks, so it is ready in time
         if (reduced || !v || v.querySelector("source")) return;
@@ -1334,7 +1323,7 @@
       start() {
         if (reduced || !v) return;
         this.prepare();
-        wanted = true; held = false; t0 = performance.now(); v.hidden = false;
+        wanted = true; t0 = performance.now(); v.hidden = false;
         try { v.currentTime = 0; } catch {}
         if (v.readyState >= 4) return go();
         const ready = () => { v.removeEventListener("canplaythrough", ready); go(); };
