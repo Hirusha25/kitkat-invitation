@@ -342,6 +342,10 @@
   @keyframes up { from { opacity: 0; transform: translateY(3cqw) } to { opacity: 1; transform: none } }
 
   .title-wrap { position: relative; }
+  .card-wrap:not(.live) #card .title, .card-wrap:not(.live) #card .spark, .card-wrap:not(.live) #card .ico-cal,
+  .card-wrap:not(.live) #card .ico-clock .hand, .card-wrap:not(.live) #card .ico-pin, .card-wrap:not(.live) #card .dress svg,
+  .card-wrap:not(.live) #card .logo, .card-wrap:not(.live) #card .rsvp-btn, .card-wrap:not(.live) #card .rsvp-btn::after { animation: none !important; }
+  .card-wrap:not(.live) #card .spark { opacity: 0; }
   .title {
     font-family: var(--display); font-weight: 700; font-size: 8.8cqw; letter-spacing: .005em; line-height: 1; margin: 0; padding: .12em .05em .08em;
     background: linear-gradient(100deg, #c9a45a 0%, #f7e6b4 22%, #e1c27a 42%, #fff8df 52%, #d4ad5c 70%, #f5e2a6 100%);
@@ -983,6 +987,7 @@
     if (!reduced) invite.classList.add("flying");
     document.body.classList.add("revealed");
     invite.hidden = false;
+    invite.classList.remove("live");
     gate.classList.remove("open");
     zoom.style.transform = "";
     window.scrollTo(0, 0);
@@ -1029,6 +1034,7 @@
     setTimeout(() => {                                   // after the flip: doors open, camera pulls back to show the full spread
       if (invite.hidden) return;
       gate.classList.add("open");
+      setTimeout(() => { if (!invite.hidden) invite.classList.add("live"); }, reduced ? 0 : 2500);
       const k = Math.min(1, (window.innerWidth - 24) / (2 * zoom.offsetWidth));
       zoom.style.transform = `scale(${k})`;
       setTimeout(() => { if (!invite.hidden) { zoom.style.transform = ""; setTimeout(() => PAN.enable(), reduced ? 0 : 1600); } }, reduced ? 0 : 3600);   // then pushes back in to read
@@ -1043,6 +1049,7 @@
     invite.querySelector(".flip").style.removeProperty("--cardX"); invite.querySelector(".flip").style.removeProperty("--cardY");
     box.classList.add("resetting");
     invite.hidden = true;
+    invite.classList.remove("live");
     document.body.classList.remove("revealed");
     box.classList.remove(...STEPS);
     gate.classList.remove("open");
