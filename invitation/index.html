@@ -953,6 +953,28 @@
     // The KitKat break: a loud, dry wafer snap with its own path (no reverb, no main limiter) so it lands crisp,
     // and the rest of the sound dips for a moment so it is clearly heard: one sharp crack, the hollow tock of
     // the airy wafer, the layers splintering, a short crunch, the knock of the bar, then the second half letting go.
+    // A wafer crunch is a dense stream of tiny fractures: very dense as the bar snaps, a second rush as the
+    // other half lets go, then thinning out to the last crumbs. Built once, sample by sample.
+    let crunchBuf = null;
+    function makeCrunch() {
+      const sr = ctx.sampleRate, len = Math.floor(sr * .45), buf = ctx.createBuffer(1, len, sr), d = buf.getChannelData(0);
+      const grain = (pos, amp, ms) => {
+        const n = Math.max(2, Math.floor(sr * ms / 1000));
+        for (let i = 0; i < n && pos + i < len; i++) d[pos + i] += (Math.random() * 2 - 1) * amp * Math.exp(-i / (n * .22));
+      };
+      const rateAt = (s) => s < .018 ? 3000 : s < .085 ? 700 * Math.exp(-(s - .018) * 9) + 260
+        : s < .11 ? 2200 : 420 * Math.exp(-(s - .11) * 8) + 18;
+      const ampAt = (s) => s < .018 ? 1 : s < .085 ? .7 * Math.exp(-(s - .018) * 6) + .12 : s < .11 ? .75 : .55 * Math.exp(-(s - .11) * 7) + .05;
+      let pos = 0;
+      while (pos < len) {
+        const s = pos / sr;
+        grain(pos, ampAt(s) * Math.pow(Math.random(), 1.6), .25 + Math.random() * 2.2);
+        pos += Math.max(1, Math.floor(-Math.log(1 - Math.random()) / rateAt(s) * sr));
+      }
+      let p = 0; for (let i = 0; i < len; i++) p = Math.max(p, Math.abs(d[i]));
+      if (p > 0) for (let i = 0; i < len; i++) d[i] /= p;
+      return buf;
+    }
     let snapOut = null;
     function wafer(at = 0) {
       if (muted || !ensure()) return;
@@ -962,6 +984,13 @@
         snapOut.connect(lim); lim.connect(ctx.destination);
       }
       const t0 = ctx.currentTime + at;
+      if (!crunchBuf) crunchBuf = makeCrunch();
+      const cr = ctx.createBufferSource(); cr.buffer = crunchBuf;          // the crunch: hundreds of tiny fractures
+      const hp = ctx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 650;
+      const pk = ctx.createBiquadFilter(); pk.type = "peaking"; pk.frequency.value = 2600; pk.Q.value = .8; pk.gain.value = 5;
+      const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 8000;
+      const cg = ctx.createGain(); cg.gain.value = .55;
+      cr.connect(hp); hp.connect(pk); pk.connect(lp); lp.connect(cg); cg.connect(snapOut); cr.start(t0);
       try { bus.gain.cancelScheduledValues(t0); bus.gain.setValueAtTime(bus.gain.value, t0); bus.gain.linearRampToValueAtTime(.35, t0 + .015); bus.gain.setValueAtTime(.35, t0 + .35); bus.gain.linearRampToValueAtTime(.9, t0 + .9); } catch {}
       const burst = (t, dur, type, freq, q, vol) => {
         const src = ctx.createBufferSource(); src.buffer = noiseBuf;
@@ -982,10 +1011,6 @@
         burst(t + .003, .022, "bandpass", 2900, 8, .35 * v);
         burst(t + .002, .12, "bandpass", 2400, 1.1, .5 * v);    // crunch of the wafer
         ping(t + .004, 210, 90, .07, .55 * v, "sine");           // knock of the bar
-        for (let i = 0; i < 16; i++) {                            // layers splintering
-          const dt = .01 + Math.pow(Math.random(), 1.6) * .17;
-          burst(t + dt, .006 + Math.random() * .012, "bandpass", 2000 + Math.random() * 5200, 1.8, Math.max(.04, .58 - dt * 2.6) * v * (.6 + Math.random() * .4));
-        }
       };
       snap(t0, 1);
       snap(t0 + .085, .65);
