@@ -166,12 +166,19 @@
   .wall { background-image: url(img/liner.jpg); transform: translateZ(0); }
   .card-mini {
     left: 6% !important; right: 6% !important; top: 7% !important; bottom: 9% !important;
-    background: var(--cream); border-radius: 3px; box-shadow: 0 2px 6px rgba(0,0,0,.35);
+    background: #5a0d16 url(img/paper.webp) center / cover; border-radius: 3px; box-shadow: 0 2px 6px rgba(0,0,0,.45);
     transform: translateZ(2px); transition: transform 1.3s cubic-bezier(.22,1,.36,1); overflow: hidden; isolation: isolate; visibility: hidden;
   }
   .card-mini img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .grain { position: absolute; inset: 0; opacity: .5; mix-blend-mode: multiply; pointer-events: none; }
   .ornament { position: absolute; left: 50%; top: 50%; width: 11%; transform: translate(-50%, -50%); }
+  /* burgundy card back: paper, thin gold frame, gold flourish */
+  .card-mini::before, .flip .back::before { content: ""; position: absolute; border: 1px solid rgba(226,190,112,.9); pointer-events: none; z-index: 1; }
+  .card-mini::before { inset: 6%; border-radius: 1px; }
+  .flip .back::before { inset: 14px; border-radius: 2px; }
+  .card-mini .grain, .flip .back .grain { opacity: .18; }
+  .flip .back .ornament { width: 17%; }
+  .card-mini .ornament { width: 13%; }
   .scene3d.open .card-mini { visibility: visible; }
   .scene3d.out .card-mini { transform: translate3d(0, -74%, 2px); }
   .pocket { background-image: url(img/env-back.jpg); clip-path: polygon(0 0, 50% var(--tip), 100% 0, 100% 100%, 0 100%); transform: translateZ(4px); }
@@ -297,7 +304,7 @@
   @keyframes sheen { from { background-position: 150% 0 } to { background-position: -150% 0 } }
   .inside-shade { position: absolute; inset: 0; z-index: 4; border-radius: 22px; background: rgba(0,0,0,.55); transform: translateZ(1px); transition: opacity 2.2s ease .3s; pointer-events: none; }
   .gate.open ~ .inside-shade, .card-wrap.open .inside-shade { opacity: 0; }
-  .flip .back { position: absolute; inset: 0; border-radius: 22px; background: var(--cream); transform: translateZ(-2.5px) rotateY(180deg); backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; box-shadow: 0 24px 50px rgba(0,0,0,.45); }
+  .flip .back { position: absolute; inset: 0; border-radius: 22px; background: #5a0d16 url(img/paper.webp) center / cover; transform: translateZ(-2.5px) rotateY(180deg); backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; box-shadow: 0 24px 50px rgba(0,0,0,.45); }
   .flip > .front { transform: translateZ(2.5px); }
   /* thin gilded paper edge, seen as the card turns */
   .cedge { position: absolute; backface-visibility: visible; -webkit-backface-visibility: visible; pointer-events: none;
