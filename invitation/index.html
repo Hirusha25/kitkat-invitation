@@ -163,7 +163,7 @@
   .address .to { font-size: calc(var(--W) * .03); letter-spacing: .32em; text-transform: uppercase; color: #e6c682; text-shadow: 0 1px 2px rgba(20,0,4,.6); }
   .address .name {
     font-family: var(--script); font-size: calc(var(--W) * .104); line-height: 1.1; margin-top: -2px; padding: .3em .1em .15em;
-    background: linear-gradient(100deg, #d2ad5e 0%, #fff0c4 28%, #ecca84 52%, #fff4d2 76%, #d2ad5e 100%);
+    background: url(img/gold-name.png) 0 0 / 100% 100%;   /* an image, not a CSS gradient: phone dark modes (Samsung Internet) darken gradients but leave images alone */
     -webkit-background-clip: text; background-clip: text; color: transparent; overflow-wrap: anywhere;
     filter: drop-shadow(0 -.6px 0 rgba(255,240,205,.45)) drop-shadow(0 1.4px 0 rgba(30,0,5,.7)) drop-shadow(0 0 5px rgba(25,0,5,.45));
   }
@@ -226,11 +226,14 @@
 
   .hint { display: flex; align-items: center; gap: 14px; font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: var(--on-dark-soft); transition: opacity .4s; text-shadow: 0 1px 3px rgba(0,0,0,.6); }
   .cta { position: relative; display: grid; place-items: center; width: 92px; height: 92px; margin-top: 4px; padding: 0; border-radius: 50%; cursor: pointer;
-    border: 1px solid rgba(243,216,152,.9); background: none; color: #f3d898;
+    border: 1px solid transparent; background: none; color: #f3d898;
     font-family: var(--display); font-weight: 700; font-size: 10.5px; letter-spacing: .26em; line-height: 1.7; text-indent: .26em; text-align: center;
     text-shadow: 0 1px 3px rgba(0,0,0,.9), 0 0 14px rgba(0,0,0,.7);
     box-shadow: 0 0 0 1px rgba(0,0,0,.18), 0 2px 6px rgba(0,0,0,.35), inset 0 0 0 1px rgba(0,0,0,.12); }
   .cta::before { content: ""; position: absolute; inset: -1px; border-radius: 50%; border: 1px solid rgba(243,216,152,.6); animation: halo 3.2s ease-out 2.6s infinite; pointer-events: none; }
+  /* the ring itself: an image through a ring mask, so forced dark modes cannot dim it */
+  .cta::after { content: ""; position: absolute; inset: -1px; padding: 1px; border-radius: 50%; background: url(img/gold-cta.png) 0 0 / 100% 100%; opacity: .9; -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); pointer-events: none; }
+  .cta:hover::after, .cta:focus-visible::after { opacity: 1; }
   .cta:hover, .cta:focus-visible { outline: none; color: #fff0c8; border-color: #fff0c8; }
   body.ready .cta.away, body .cta.away { animation: none; opacity: 0; transform: scale(.92); pointer-events: none; transition: opacity .45s ease, transform .45s ease; }
   body.ready .cta.away::before, body .cta.away::before { animation: none; opacity: 0; }
@@ -374,8 +377,7 @@
   .card-wrap:not(.live) #card .spark { opacity: 0; }
   .title {
     font-family: var(--display); font-weight: 700; font-size: 8.8cqw; letter-spacing: .005em; line-height: 1; margin: 0; padding: .12em .05em .08em;
-    background: linear-gradient(100deg, #c9a45a 0%, #f7e6b4 22%, #e1c27a 42%, #fff8df 52%, #d4ad5c 70%, #f5e2a6 100%);
-    background-size: 250% 100%;
+    background: url(img/gold-title.png) 0 0 / 250% 100%;   /* image so forced dark modes cannot darken the gold */
     -webkit-background-clip: text; background-clip: text; color: transparent;
     animation: shimmer 6s linear infinite;
     filter: drop-shadow(0 2px 3px rgba(0,0,0,.55));
@@ -411,7 +413,9 @@
   @keyframes tick { to { transform: rotate(360deg) } }
   @keyframes hop { 0%, 100% { transform: translateY(0) } 40% { transform: translateY(-.9cqw) } 60% { transform: translateY(-.9cqw) } }
 
-  .dress { display: inline-flex; align-items: center; gap: 2.4cqw; margin-top: 5.5cqw; padding: 1.6cqw 4.5cqw; border: 1px solid var(--cg); border-radius: 99px; font-size: 3.4cqw; max-width: 100%; white-space: nowrap; }
+  .dress { display: inline-flex; align-items: center; gap: 2.4cqw; margin-top: 5.5cqw; padding: 1.6cqw 4.5cqw; border: 1px solid transparent; border-radius: 99px; font-size: 3.4cqw; max-width: 100%; white-space: nowrap; position: relative; }
+  /* gold outline drawn from an image through a ring mask, so forced dark modes cannot dim it */
+  .dress::before { content: ""; position: absolute; inset: -1px; padding: 1px; border-radius: inherit; background: url(img/gold-line.png) 0 0 / 100% 100%; -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); pointer-events: none; }
   .dress svg { width: 5.2cqw; height: 5.2cqw; stroke: var(--cg); fill: none; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; flex: none; transform-origin: 50% 15%; animation: sway 3.6s ease-in-out infinite; }
   .dress .sep { width: 1px; height: 4cqw; background: var(--cg); }
   @keyframes sway { 0%, 100% { transform: rotate(-7deg) } 50% { transform: rotate(7deg) } }
@@ -456,17 +460,19 @@
   .rsvp-btn {
     margin-top: 3.2cqw; padding: 2cqw 9cqw; border-radius: 99px; border: 0; cursor: pointer;
     font-family: var(--display); font-weight: 700; font-size: 3.6cqw; letter-spacing: .28em; text-indent: .28em; color: #3a1a06;
-    background: linear-gradient(100deg, #b8923f 0%, #f3dfa6 35%, #d4b062 60%, #f6e6b8 85%, #b8923f 100%); background-size: 220% 100%;
+    background: url(img/gold-button.png) 0 0 / 220% 100%;   /* image so forced dark modes keep the gold */
     box-shadow: 0 4px 14px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.6);
     animation: shimmer 5s linear calc(var(--t0) + 2s) infinite;
     position: relative;
   }
+  /* the dark lettering on gold is painted from an image too: forced dark modes would otherwise turn it light and it vanishes on the gold */
+  .r-ink { background: url(img/ink-brown.png) 0 0 / 100% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
   .rsvp-btn::after { content: ""; position: absolute; inset: -4px; border-radius: inherit; border: 1px solid rgba(240,207,138,.6); animation: ring 2.6s ease-out calc(var(--t0) + 2.4s) infinite; pointer-events: none; }
   @keyframes ring { 0% { opacity: .9; transform: scale(1) } 100% { opacity: 0; transform: scale(1.18, 1.5) } }
   /* after replying: a compact gold pill with the answer, and "Change reply" underneath */
   .rsvp-btn.done { padding: 0; background: none; box-shadow: none; animation: none !important; display: grid; justify-items: center; gap: 1.4cqw; text-indent: 0; letter-spacing: 0; }
   .rsvp-btn.done .r-main { padding: 1.7cqw 6.5cqw; border-radius: 99px; font-size: 3.2cqw; letter-spacing: .22em; text-indent: .22em; color: #3a1a06; white-space: nowrap;
-    background: linear-gradient(100deg, #b8923f 0%, #f3dfa6 35%, #d4b062 60%, #f6e6b8 85%, #b8923f 100%); box-shadow: 0 4px 14px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.6); }
+    background: url(img/gold-button.png) 0 0 / 100% 100%; box-shadow: 0 4px 14px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.6); }
   .rsvp-btn.done .r-sub { font-family: var(--body); font-weight: 500; font-size: 2.7cqw; letter-spacing: .06em; color: #fff3d6; text-decoration: underline; text-underline-offset: .5cqw;
     text-shadow: 0 1px 3px rgba(0,0,0,.85), 0 0 10px rgba(30,4,0,.6); }
   .rsvp-btn.done::after { display: none; }
@@ -640,7 +646,7 @@
         </div>
         <div class="dress"><svg viewBox="0 0 24 24"><path d="M12 4a2 2 0 1 1 2 2c-1 .3-2 1-2 2v1"/><path d="M12 9 3 15.5a1 1 0 0 0 .6 1.8h16.8a1 1 0 0 0 .6-1.8L12 9z"/></svg><span>Dress Code</span><span class="sep"></span><span data-f="dress"></span></div>
         <img class="logo" src="img/kitkat-logo.png" alt="Nestlé KitKat">
-        <button class="rsvp-btn" id="rsvp-open" type="button">RSVP</button>
+        <button class="rsvp-btn" id="rsvp-open" type="button"><span class="r-ink">RSVP</span></button>
       </div>
     </article>
     </div>
@@ -711,7 +717,7 @@
 <script>
   // ---- show the scene only once its images are ready (mobile data can be slow) ----
   (() => {
-    const srcs = ["img/scene.jpg", "img/env-front.jpg", "img/env-back.jpg", "img/liner.jpg", "img/seal-kitkat.webp", "img/card-still.webp", "img/kitkat-logo.png", "img/paper.webp"];
+    const srcs = ["img/scene.jpg", "img/env-front.jpg", "img/env-back.jpg", "img/liner.jpg", "img/seal-kitkat.webp", "img/card-still.webp", "img/kitkat-logo.png", "img/paper.webp", "img/gold-name.png", "img/gold-title.png", "img/gold-button.png", "img/ink-brown.png", "img/gold-line.png", "img/gold-cta.png"];
     const one = src => new Promise(res => { const i = new Image(); i.onload = i.onerror = () => (i.decode ? i.decode().catch(() => {}) : Promise.resolve()).then(res); i.src = src; });
     const fonts = document.fonts && document.fonts.ready ? document.fonts.ready.catch(() => {}) : Promise.resolve();
     const go = () => { if (!document.body.classList.contains("ready")) { document.body.classList.add("ready"); setTimeout(() => { const l = document.getElementById("loader"); if (l) l.hidden = true; }, 900); } };
@@ -1388,10 +1394,11 @@
     function paintButton() {
       const r = saved();
       openBtn.classList.toggle("done", !!r);
-      if (!r) { openBtn.textContent = "RSVP"; openBtn.removeAttribute("aria-label"); return; }
+      if (!r) { const ink = document.createElement("span"); ink.className = "r-ink"; ink.textContent = "RSVP"; openBtn.replaceChildren(ink); openBtn.removeAttribute("aria-label"); return; }
       const main = document.createElement("span"), sub = document.createElement("span");
       main.className = "r-main"; sub.className = "r-sub";
-      main.textContent = r.response === "Attending" ? "\u2713  Attending" : "\u2713  Reply sent";
+      const ink = document.createElement("span"); ink.className = "r-ink"; main.append(ink);
+      ink.textContent = r.response === "Attending" ? "\u2713  Attending" : "\u2713  Reply sent";
       sub.textContent = "Change reply";
       openBtn.replaceChildren(main, sub);
       openBtn.setAttribute("aria-label", main.textContent.replace("\u2713", "").trim() + ". Change reply");
