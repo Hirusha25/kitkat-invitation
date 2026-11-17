@@ -1317,6 +1317,13 @@
     }
     zone.addEventListener("pointerup", end); zone.addEventListener("pointercancel", end);
     zone.addEventListener("click", e => { if (swallowClick) { e.stopPropagation(); e.preventDefault(); } }, true);
+    // a tilted card (phone motion tilt on Android) tips its lower half behind these invisible .pan/.zoom planes, which then take
+    // the tap meant for RSVP. A plain tap that lands on a plane itself is handed to the button underneath; swipes are untouched.
+    zone.addEventListener("click", e => {
+      if (swallowClick || (e.target !== zone && e.target !== el)) return;
+      const under = document.elementsFromPoint(e.clientX, e.clientY).find(n => n !== zone && n !== el && zone.contains(n) && n.closest("button"));
+      if (under) under.closest("button").click();
+    });
     document.addEventListener("keydown", e => {
       if (!on || invite.hidden || !document.getElementById("rsvp").hidden) return;
       const i = x > max / 2 ? 0 : x < -max / 2 ? 2 : 1;
