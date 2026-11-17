@@ -1139,7 +1139,7 @@
     await wait(500);
     makeDust();
     CHOC.prepare();
-    SFX.crack(); SFX.sealSparkle(.05); buzz([12, 40, 20]);
+    SFX.wafer(); SFX.sealSparkle(.05); buzz([12, 40, 20]);   // the seal snaps like a KitKat wafer
     box.classList.add("crack");            // seal breaks, gold dust
     await wait(520);
     SFX.flap();
@@ -1214,7 +1214,6 @@
     setTimeout(() => {                                   // after the flip: doors open, camera pulls back to show the full spread
       if (invite.hidden) return;
       gate.classList.add("open");
-      SFX.wafer();                                       // the two halves part like a KitKat snapped in two
       TRACK.send("card");
       CHOC.start();
       setTimeout(() => { if (!invite.hidden) invite.classList.add("live"); }, reduced ? 0 : 2500);
