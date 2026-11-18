@@ -523,8 +523,8 @@
   .reply .choice:has(input:focus-visible) { outline: 2px solid #8c0f1e; outline-offset: 2px; }
   .reply .choice .c-script { font-family: "Beau Rivage", "Brush Script MT", cursive; font-size: 24px; line-height: 1; color: #8c0f1e; padding-top: .12em; }
   .reply .err { color: #a3121f; font-size: 13px; min-height: 1em; margin: 0; text-align: center; }
-  .reply .send { margin-top: 2px; justify-self: center; padding: 13px 34px; border: 0; border-radius: 99px; cursor: pointer; font-family: var(--display); font-weight: 700; font-size: 13px; letter-spacing: .24em; text-indent: .24em; color: #fff; background: #8c0f1e; box-shadow: 0 4px 12px rgba(140,15,30,.35); }
-  .reply .send:hover, .reply .send:focus-visible { background: #6d0b17; outline: none; }
+  .reply .send { margin-top: 2px; justify-self: center; padding: 13px 34px; border: 0; border-radius: 99px; cursor: pointer; font-family: var(--display); font-weight: 700; font-size: 13px; letter-spacing: .24em; text-indent: .24em; color: #fff; background: #a30b07 url(img/red-send.png) 0 0 / 100% 100%; box-shadow: 0 4px 12px rgba(163,11,7,.35); }
+  .reply .send:hover, .reply .send:focus-visible { background: #820805 url(img/red-send-dark.png) 0 0 / 100% 100%; outline: none; }
   .reply .send[disabled] { opacity: .6; cursor: progress; }
   .reply .note { font-size: 11px; color: #8a7660; text-align: center; margin: 0; }
   .reply .thanks h3 { font-family: "Beau Rivage", "Brush Script MT", cursive; font-weight: 400; font-size: 38px; line-height: 1.15; color: #8c0f1e; margin: 8px 0 6px; padding-top: .1em; overflow-wrap: anywhere; }
@@ -717,7 +717,7 @@
 <script>
   // ---- show the scene only once its images are ready (mobile data can be slow) ----
   (() => {
-    const srcs = ["img/scene.jpg", "img/env-front.jpg", "img/env-back.jpg", "img/liner.jpg", "img/seal-kitkat.webp", "img/card-still-v3.webp", "img/kitkat-logo.png", "img/paper.webp", "img/gold-name.png", "img/gold-title.png", "img/gold-button.png", "img/ink-brown.png", "img/gold-line.png", "img/gold-cta.png"];
+    const srcs = ["img/scene.jpg", "img/env-front.jpg", "img/env-back.jpg", "img/liner.jpg", "img/seal-kitkat.webp", "img/card-still-v3.webp", "img/kitkat-logo.png", "img/paper.webp", "img/gold-name.png", "img/gold-title.png", "img/gold-button.png", "img/ink-brown.png", "img/gold-line.png", "img/gold-cta.png", "img/red-send.png", "img/red-send-dark.png"];
     const one = src => new Promise(res => { const i = new Image(); i.onload = i.onerror = () => (i.decode ? i.decode().catch(() => {}) : Promise.resolve()).then(res); i.src = src; });
     const fonts = document.fonts && document.fonts.ready ? document.fonts.ready.catch(() => {}) : Promise.resolve();
     const go = () => { if (!document.body.classList.contains("ready")) { document.body.classList.add("ready"); setTimeout(() => { const l = document.getElementById("loader"); if (l) l.hidden = true; }, 900); } };
