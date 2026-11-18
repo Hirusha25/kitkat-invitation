@@ -346,7 +346,7 @@
   .card {
     position: relative; width: 100%; aspect-ratio: 955 / 1700;
     border-radius: 22px; overflow: hidden;
-    background: #5a0a12 url(img/card-still-v2.webp) center / cover no-repeat;
+    background: #5a0a12 url(img/card-still-v3.webp) center / cover no-repeat;
     color: #fff; text-align: center;
     box-shadow: 0 30px 60px rgba(0,0,0,.65);
     container-type: inline-size;
@@ -630,7 +630,7 @@
     <div class="inside-shade" aria-hidden="true"></div>
     <div class="sheen" aria-hidden="true"></div>
     <article class="card" id="card">
-      <video class="card-video" id="card-video" muted playsinline loop preload="none" poster="img/card-still-v2.webp" aria-hidden="true" disablepictureinpicture disableremoteplayback hidden></video>
+      <video class="card-video" id="card-video" muted playsinline loop preload="none" poster="img/card-still-v3.webp" aria-hidden="true" disablepictureinpicture disableremoteplayback hidden></video>
       <div class="content">
         <div class="title-wrap">
           <svg class="spark s1" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg><svg class="spark s2" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg><svg class="spark s3" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg><svg class="spark s4" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg>
@@ -717,7 +717,7 @@
 <script>
   // ---- show the scene only once its images are ready (mobile data can be slow) ----
   (() => {
-    const srcs = ["img/scene.jpg", "img/env-front.jpg", "img/env-back.jpg", "img/liner.jpg", "img/seal-kitkat.webp", "img/card-still-v2.webp", "img/kitkat-logo.png", "img/paper.webp", "img/gold-name.png", "img/gold-title.png", "img/gold-button.png", "img/ink-brown.png", "img/gold-line.png", "img/gold-cta.png"];
+    const srcs = ["img/scene.jpg", "img/env-front.jpg", "img/env-back.jpg", "img/liner.jpg", "img/seal-kitkat.webp", "img/card-still-v3.webp", "img/kitkat-logo.png", "img/paper.webp", "img/gold-name.png", "img/gold-title.png", "img/gold-button.png", "img/ink-brown.png", "img/gold-line.png", "img/gold-cta.png"];
     const one = src => new Promise(res => { const i = new Image(); i.onload = i.onerror = () => (i.decode ? i.decode().catch(() => {}) : Promise.resolve()).then(res); i.src = src; });
     const fonts = document.fonts && document.fonts.ready ? document.fonts.ready.catch(() => {}) : Promise.resolve();
     const go = () => { if (!document.body.classList.contains("ready")) { document.body.classList.add("ready"); setTimeout(() => { const l = document.getElementById("loader"); if (l) l.hidden = true; }, 900); } };
@@ -1364,7 +1364,7 @@
     return {
       prepare() {                                         // start downloading as the seal breaks, so it is ready in time
         if (reduced || !v || v.querySelector("source")) return;
-        [["img/card-loop-v2.mp4", "video/mp4"], ["img/card-loop-v2.webm", "video/webm"]].forEach(([src, type]) => { const el = document.createElement("source"); el.src = src; el.type = type; v.append(el); });
+        [["img/card-loop-v3.mp4", "video/mp4"], ["img/card-loop-v3.webm", "video/webm"]].forEach(([src, type]) => { const el = document.createElement("source"); el.src = src; el.type = type; v.append(el); });
         v.preload = "auto"; v.load();
       },
       start() {
